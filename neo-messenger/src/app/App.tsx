@@ -21,7 +21,14 @@ export default function App() {
             <Route path="/" element={<Navigate to="/inbox" replace />} />
             <Route
               path="/inbox"
-              element={<AppShell sidebar={<InboxListRegion />} main={<PaneEmptyState />} />}
+              element={
+                <AppShell
+                  sidebar={(collapsed, onExpand) => (
+                    <InboxListRegion collapsed={collapsed} onExpand={onExpand} />
+                  )}
+                  main={<PaneEmptyState />}
+                />
+              }
             />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>

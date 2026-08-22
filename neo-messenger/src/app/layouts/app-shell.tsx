@@ -1,5 +1,6 @@
 // AppShell — responsive shell: desktop sidebar + main pane; mobile single pane + top/bottom nav + drawer
-// Slot contract: <AppShell sidebar main> — sidebar slot filled by feature barrels, main by page content
+// Slot contract: <AppShell sidebar main> — sidebar is a function of collapsed state so feature content
+// can adapt to icon-rail mode. sidebar slot filled by feature barrels, main by page content.
 import { useState, type ReactNode } from 'react'
 import { X, Menu } from 'lucide-react'
 import logo from '../../assets/logo.png'
@@ -8,7 +9,7 @@ import { BottomNavBar } from '../components/bottom-nav-bar'
 import { UserMenu } from '../components/user-menu'
 
 interface AppShellProps {
-  sidebar: ReactNode
+  sidebar: (collapsed: boolean, onExpand: () => void) => ReactNode
   main: ReactNode
 }
 
@@ -41,47 +42,59 @@ export function AppShell({ sidebar, main }: AppShellProps) {
               <X className="h-6 w-6" />
             </button>
           </div>
-          {sidebar}
+          {sidebar(false, () => setSidebarCollapsed(true))}
         </div>
       </div>
 
       {/* Desktop/tablet sidebar */}
       <aside
-        className={`hidden h-full flex-col border-r border-border bg-panel md:flex transition-all ${
+        className={`relative hidden h-full flex-col border-r border-border bg-panel md:flex transition-all ${
           sidebarCollapsed ? 'md:w-20' : 'md:w-80 lg:w-96'
         }`}
       >
-        {/* brand + collapse toggle. White/10 circle behind toggle; title hidden when collapsed */}
-        <div className="flex items-center justify-between border-b border-border p-3">
-          <div className="flex min-w-0 items-center gap-2">
+        {/* brand — collapsed: logo only, centered, fixed size (no squish) */}
+        <div className="shrink-0 border-b border-border px-2 py-2 overflow-hidden">
+          {sidebarCollapsed ? (
             <img
               src={logo}
-              alt="NEO Messenger logo"
-              className="h-8 w-8 shrink-0 rounded-full object-cover"
+              alt="NEO Messenger"
+              className="mx-auto h-9 w-9 shrink-0 rounded-full object-cover"
             />
-            {!sidebarCollapsed && (
+          ) : (
+            <div className="flex min-w-0 items-center gap-2">
+              <img
+                src={logo}
+                alt="NEO Messenger logo"
+                className="h-9 w-9 shrink-0 rounded-full object-cover"
+              />
               <span className="truncate text-lg font-extrabold tracking-tighter text-cyan">
                 NEO Messenger
               </span>
-            )}
-          </div>
-          <button
-            onClick={() => setSidebarCollapsed((c) => !c)}
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-expanded={!sidebarCollapsed}
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-muted-foreground transition-colors hover:bg-white/20 hover:text-foreground"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
+            </div>
+          )}
         </div>
-        <div className="flex-1 overflow-hidden">{sidebar}</div>
-        <div className="border-t border-border p-2">
+
+        {/* feature content — adapts to collapsed (icon rail) */}
+        <div className="flex-1 overflow-y-auto">{sidebar(sidebarCollapsed, () => setSidebarCollapsed(false))}</div>
+
+        <div className="shrink-0 border-t border-border p-2">
           <UserMenu />
         </div>
+
+        {/* floating collapse bubble — just right of the sidebar edge */}
+        <button
+          onClick={() => setSidebarCollapsed((c) => !c)}
+          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!sidebarCollapsed}
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="absolute -right-3.5 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-muted-foreground shadow-md transition-colors hover:bg-white/20 hover:text-foreground"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
       </aside>
 
       {/* Main pane */}
-      <main className="flex-1 min-w-0 overflow-y-auto md:ml-0 pt-16 md:pt-0">{main}</main>
+      <main className="flex-1 min-w-0 overflow-y-auto pt-16 md:pt-0">{main}</main>
 
       {/* Mobile bottom nav */}
       <BottomNavBar />

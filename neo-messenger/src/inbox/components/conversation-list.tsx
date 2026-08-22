@@ -2,9 +2,23 @@
 import { mockConversations } from '../mock-conversations'
 import { ConversationItem } from './conversation-item'
 
-export function ConversationList() {
+interface ConversationListProps {
+  collapsed?: boolean
+}
+
+export function ConversationList({ collapsed = false }: ConversationListProps) {
   const conversations = mockConversations
-  const activeId = 'c1'
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        {conversations.map((c) => (
+          <ConversationItem key={c.id} conversation={c} compact />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-1 p-2 md:p-3">
       {conversations.length === 0 ? (
@@ -13,9 +27,7 @@ export function ConversationList() {
           <p className="mt-1 text-xs">Start a conversation to begin</p>
         </div>
       ) : (
-        conversations.map((c) => (
-          <ConversationItem key={c.id} conversation={c} active={c.id === activeId} />
-        ))
+        conversations.map((c) => <ConversationItem key={c.id} conversation={c} />)
       )}
     </div>
   )
