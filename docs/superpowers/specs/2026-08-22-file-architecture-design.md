@@ -62,7 +62,7 @@ Sprint-5 task `5.1 Security Audit: RLS + Realtime + Storage` reviews these files
 
 ## 5. Frontend Structure — `neo-messenger/src/`
 
-**Layering rule:** feature folders may import from `shared/*` and from each other only via `shared/` promotion. A feature folder must not import another feature's folder.
+**Layering rule:** feature folders import from `shared/*` freely. Cross-feature imports are allowed ONLY through the feature's public barrel (`index.ts`) — never deep imports into another feature's internals. Page-level composition happens through these barrels (example: inbox composes `stories`'s `StoryTray`, which lives in the stories feature). Universal values (limits, shared types) belong in `shared/` and are promoted there.
 
 ### 5.1 Top-level folders
 
@@ -79,6 +79,7 @@ src/
     ├── ui/            # shadcn primitives + global presentational components
     ├── lib/           # supabase client, env config, date utils, cn()
     ├── hooks/         # cross-feature hooks: useMediaQuery, useDebounce, useToast
+    ├── api/           # cross-feature data access: user search, storage uploads
     ├── types/         # DB row types (from types/types.ts), shared domain types
     └── constants/     # limits: group cap 10, image 5MB, text 2000 chars, caption 120
 ```
@@ -127,7 +128,220 @@ Known promotion cases:
 
 - `ImageUploader` — used by profile (avatar), conversations (image message), stories (story image) → promote to `shared/ui/`.
 - `MessageBubble`, reactions row, typing indicator — used by conversation detail AND inbox list preview → live in `messaging/` (single owner, both import from it).
+- `MemberPicker` — used by inbox (new group dialog) and conversations (add members) → `shared/ui/member-picker.tsx`. It is **presentational** (receives users/selection via props); the user-search calls happen in the calling feature.
 - `ConversationItem`, `StoryProgressBar`, `StoryTray` — single-feature → stay inside their feature folder.
+
+### 5.6 Full target file tree
+
+Colocated component tests (`*.test.tsx`) are not listed file-by-file below — one test file lives next to each unit that needs one.
+
+```
+Messenger-Clone/
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── docs/
+│   ├── superpowers/specs/
+│   │   └── 2026-08-22-file-architecture-design.md
+│   ├── NEO_Messenger_Clone_SRS.md
+│   ├── NEO_Messenger_Clone_UX_Plan.md
+│   ├── NEO_Messenger_Clone_Stitch_Design_Brief.md
+│   ├── GIT_WORKFLOW.md
+│   └── (weekly reports)
+├── screenshots/                 # deliverable; .gitkeep now
+├── supabase/
+│   ├── migrations/
+│   │   ├── 01_profiles.sql          # profiles table + RLS (auth-owned, public read)
+│   │   ├── 02_conversations.sql     # conversations + conversation_members + RLS
+│   │   ├── 03_messages.sql          # messages + attachments + RLS + realtime publication
+│   │   ├── 04_stories.sql           # stories + story_views + RLS + realtime publication
+│   │   ├── 05_reactions.sql         # message_reactions + RLS + realtime
+│   │   └── 06_presence_typing.sql   # online presence / typing (extras)
+│   ├── seed.sql                     # dev seed data
+│   ├── config.toml                  # local dev, storage buckets (messages, avatars, stories)
+│   ├── functions/
+│   │   └── .gitkeep                 # RESERVED, empty — server-side compute later
+│   └── README.md                    # how to run local Supabase + apply migrations
+├── .gitignore
+└── README.md                        # main submission README
+
+neo-messenger/
+├── e2e/
+│   ├── playwright.config.ts
+│   ├── fixtures/
+│   │   ├── helpers.ts                # login helper, page setup
+│   │   └── test-user.ts              # created users per flow
+│   └── specs/
+│       ├── auth.spec.ts
+│       ├── messaging.spec.ts
+│       └── stories.spec.ts
+├── public/
+│   ├── favicon.svg
+│   └── icons.svg
+├── src/
+│   ├── main.tsx                      # entry → <App/>
+│   ├── index.css                     # Tailwind + global styles
+│   ├── assets/
+│   │   └── hero.png
+│   ├── app/
+│   │   ├── App.tsx                   # provider composition + <AppRouter/>
+│   │   ├── router/
+│   │   │   └── app-router.tsx        # route table + guard wrapping
+│   │   ├── layouts/
+│   │   │   └── app-shell.tsx         # sidebar + main pane, skip link, avatar menu
+│   │   ├── components/
+│   │   │   └── user-menu.tsx         # avatar dropdown: Profile / Settings / Sign out
+│   │   ├── pages/
+│   │   │   └── not-found-page.tsx
+│   │   ├── contexts/
+│   │   │   └── theme-context.tsx     # System/Light/Dark
+│   │   └── providers/
+│   │       └── app-providers.tsx     # QueryClient + Auth + Theme + Toast
+│   ├── auth/
+│   │   ├── index.ts                  # public barrel
+│   │   ├── service/
+│   │   │   └── auth-service.ts       # signUp/signIn/signOut/recover/updatePassword/session
+│   │   ├── context/
+│   │   │   └── auth-context.tsx      # session provider
+│   │   ├── guards/
+│   │   │   ├── require-auth.tsx      # redirect guests → /login
+│   │   │   └── guest-only.tsx        # redirect authed users → /inbox
+│   │   ├── pages/
+│   │   │   ├── landing-page.tsx
+│   │   │   ├── login-page.tsx
+│   │   │   ├── signup-page.tsx
+│   │   │   ├── recover-page.tsx
+│   │   │   └── reset-password-page.tsx
+│   │   └── components/
+│   │       └── auth-layout.tsx       # centered card layout for guest screens
+│   ├── profile/
+│   │   ├── index.ts
+│   │   ├── api/
+│   │   │   └── profile.ts            # upsert profile, display_name/avatar update
+│   │   ├── hooks/
+│   │   │   └── use-profile.ts
+│   │   ├── pages/
+│   │   │   ├── setup-profile-page.tsx
+│   │   │   ├── profile-page.tsx
+│   │   │   └── settings-page.tsx
+│   │   └── components/
+│   │       └── profile-form.tsx
+│   ├── inbox/
+│   │   ├── index.ts
+│   │   ├── api/
+│   │   │   ├── conversations.ts      # list ordered by latest activity + unread + preview
+│   │   │   └── new-conversation.ts   # create direct/group (≤10)
+│   │   ├── hooks/
+│   │   │   ├── use-conversation-list.ts
+│   │   │   └── use-debounced-search.ts
+│   │   ├── pages/
+│   │   │   └── inbox-page.tsx        # story tray (via stories barrel) + list + search
+│   │   └── components/
+│   │       ├── conversation-list.tsx
+│   │       ├── conversation-item.tsx
+│   │       ├── search-bar.tsx
+│   │       ├── search-results.tsx    # People + Conversations groups
+│   │       └── new-conversation-dialog.tsx  # Direct/Group tabs
+│   ├── conversations/
+│   │   ├── index.ts
+│   │   ├── api/
+│   │   │   ├── messages.ts           # fetch older pages, send text/image, delete own
+│   │   │   ├── members.ts            # add members, last_read_at updates
+│   │   │   └── group-info.ts         # title/image edits
+│   │   ├── hooks/
+│   │   │   └── use-conversation.ts   # TanStack: pages + optimistic send + read state
+│   │   ├── pages/
+│   │   │   └── conversation-page.tsx
+│   │   └── components/
+│   │       ├── message-list.tsx      # thread + date separators + unread divider
+│   │       ├── group-info-panel.tsx
+│   │       ├── add-members-dialog.tsx
+│   │       └── jump-to-unread.tsx    # "↓ n unread" chip
+│   ├── messaging/
+│   │   ├── index.ts
+│   │   ├── api/
+│   │   │   └── reactions.ts          # toggle reaction, aggregated counts
+│   │   ├── hooks/
+│   │   │   ├── use-message-realtime.ts  # insert/delete/reaction channel subscription
+│   │   │   ├── use-typing.ts         # broadcast + listen (debounced)
+│   │   │   └── use-presence.ts       # online presence (extra feature 1)
+│   │   └── components/
+│   │       ├── message-bubble.tsx
+│   │       ├── message-composer.tsx  # PRESENTATIONAL; send wiring lives in conversations
+│   │       ├── date-separator.tsx
+│   │       ├── unread-divider.tsx
+│   │       ├── typing-indicator.tsx
+│   │       ├── reaction-row.tsx
+│   │       └── reaction-picker.tsx
+│   ├── stories/
+│   │   ├── index.ts
+│   │   ├── api/
+│   │   │   ├── stories.ts            # active list (<24h), create, delete
+│   │   │   └── story-views.ts        # record view, viewers list
+│   │   ├── hooks/
+│   │   │   ├── use-active-stories.ts
+│   │   │   └── use-story-playback.ts  # 5s timer, keyboard/swipe nav, seen-after-1s
+│   │   ├── pages/
+│   │   │   ├── story-compose-page.tsx
+│   │   │   └── story-viewer-page.tsx
+│   │   └── components/
+│   │       ├── story-tray.tsx
+│   │       ├── story-avatar.tsx
+│   │       ├── story-viewer.tsx
+│   │       ├── story-progress-bar.tsx
+│   │       ├── story-caption.tsx
+│   │       └── viewer-list-dialog.tsx
+│   └── shared/
+│       ├── ui/
+│       │   ├── button.tsx  input.tsx  label.tsx  dialog.tsx  sheet.tsx
+│       │   ├── dropdown-menu.tsx  tabs.tsx  avatar.tsx  badge.tsx
+│       │   ├── card.tsx  skeleton.tsx  tooltip.tsx  toast.tsx
+│       │   ├── empty-state.tsx  error-state.tsx  confirm-dialog.tsx
+│       │   ├── avatar-stack.tsx  image-lightbox.tsx
+│       │   ├── image-uploader.tsx    # promoted: avatar + messages + stories uploads
+│       │   ├── member-picker.tsx     # presentational; data via props
+│       │   └── forms/
+│       │       ├── form-field.tsx
+│       │       └── password-input.tsx
+│       ├── lib/
+│       │   ├── supabase/
+│       │   │   ├── client.ts         # createClient singleton
+│       │   │   └── realtime.ts       # typed channel helpers
+│       │   ├── api/
+│       │   │   ├── users.ts          # search users by name (cross-feature)
+│       │   │   └── uploads.ts        # storage upload with progress + cancel
+│       │   ├── utils.ts              # cn()
+│       │   ├── date.ts               # relative time, day separators, tabular format
+│       │   └── env.ts                # typed env access
+│       ├── hooks/
+│       │   ├── use-media-query.ts
+│       │   ├── use-debounce.ts
+│       │   └── use-toast.ts
+│       ├── types/
+│       │   └── database.ts           # DB row types (= today's src/types/types.ts)
+│       └── constants/
+│           ├── limits.ts             # group 10, image 5MB, text 2000, caption 120
+│           └── realtime.ts           # channel names, event names
+├── src/test/
+│   ├── setup.ts                      # vitest setup: jest-dom, cleanup
+│   └── supabase-mock.ts              # mock supabase client
+├── .env.example                      # committed: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+├── components.json                   # shadcn path alias → shared/ui, @ -> src
+├── vite.config.ts
+├── tsconfig.json  tsconfig.app.json  tsconfig.node.json
+├── eslint.config.js  .prettierrc  .prettierignore
+├── package.json  index.html
+```
+
+### 5.7 Starter-file cleanup (first task)
+
+Restructure from the Vite starter state:
+
+- Move `src/types/types.ts` → `src/shared/types/database.ts` (content unchanged).
+- Move `src/components/ui/*` → `src/shared/ui/*`; `src/lib/utils.ts` → `src/shared/lib/utils.ts`.
+- Delete starter junk: `src/App.css`, `src/assets/react.svg`, `src/assets/vite.svg`.
+- Rewrite `src/App.tsx` → `src/app/App.tsx` (replaces counter demo); `main.tsx` re-points imports.
+- Update `components.json` alias and `vite.config.ts` path alias: `@/components/ui` → `@/shared/ui`.
+- Keep `public/favicon.svg`, `public/icons.svg`, `src/assets/hero.png`, `src/index.css`.
 
 ## 6. Data-Flow Model (how "backend code" works)
 
@@ -148,20 +362,22 @@ App-side DB calls live in each feature's `api/` folder. Server-side authority (w
 ## 7. Testing Layout
 
 - Unit/component tests colocated: `<file>.test.ts(x)` next to source (Vitest + RTL).
-- E2E (Playwright) lives in `neo-messenger/e2e/` at app root, not in `src/`, since it runs against the built app.
+- E2E (Playwright) lives in `neo-messenger/e2e/` at app root, not in `src/`, since it runs against the built app. One spec per major flow (`auth`, `messaging`, `stories`), shared fixtures in `e2e/fixtures/`.
 - Test setup/mocks under `neo-messenger/src/test/` (setup file, supabase mock client) — owned by whoever touches testing tasks (5.4).
 
 ## 8. Config / Env Files
 
-- `.env` lives in `neo-messenger/` (already gitignored at root); `.env.example` committed alongside it.
+- `.env` lives in `neo-messenger/` (already gitignored at root); `.env.example` committed alongside it with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (typed access via `shared/lib/env.ts`).
 - Vercel root directory stays `neo-messenger`.
 - All `npm` commands run from `neo-messenger/` (committed GIT_WORKFLOW rule).
+- Never commit secret keys (SRS requirement); values only exist in local `.env` / Vercel dashboard.
 
 ## 9. Accepted Trade-offs
 
 - Frontend/backend separation is by folder *within* a mono-repo, not a split into `frontend/`/`backend/` (no backend app exists to split).
 - `shared/` promotion rule requires discipline; without it `shared/` degrades to a dump.
-- `messaging/` vs `conversations/` boundary: `messaging/` holds message-domain reusable pieces, `conversations/` holds the page + page-specific composition. Boundary is enforced by review, not tooling.
+- `messaging/` vs `conversations/` boundary: `messaging/` holds presentational message-domain pieces + realtime hooks (`MessageComposer` receives an `onSend` callback and does no DB calls; `conversations/` wires it to `api/messages.ts`), `conversations/` holds the page + page-specific composition + mutations. Boundary is enforced by review, not tooling.
+- Cross-feature composition via public barrels (e.g. inbox importing `StoryTray`) is a deliberate relaxation of strict modular isolation; enforced by review — deep imports into another feature are the prohibited form.
 - Supabase functions folder reserved but empty — YAGNI until a real server-side need (image processing, scheduled story cleanup) appears.
 - Monorepo packages/ split is deliberately YAGNI'd; revisit only if `shared/` grows out of control.
 
