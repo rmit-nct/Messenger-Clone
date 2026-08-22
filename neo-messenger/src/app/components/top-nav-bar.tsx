@@ -1,6 +1,7 @@
 // TopNavBar — mobile header: menu, logo, "+", avatar menu
 import { Plus, SquarePen } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import logo from '../../assets/logo.png'
 import { UserMenu } from './user-menu'
 
 export function TopNavBar({ onMenu }: { onMenu: () => void }) {
@@ -13,7 +14,10 @@ export function TopNavBar({ onMenu }: { onMenu: () => void }) {
       >
         <SquarePen className="h-6 w-6" />
       </button>
-      <span className="text-lg font-extrabold tracking-tighter text-cyan">NEO Messenger</span>
+      <div className="flex items-center gap-2">
+        <img src={logo} alt="NEO Messenger logo" className="h-8 w-8 rounded-full object-cover" />
+        <span className="text-lg font-extrabold tracking-tighter text-cyan">NEO Messenger</span>
+      </div>
       <div className="flex items-center gap-2">
         <Link
           to="/new-conversation"

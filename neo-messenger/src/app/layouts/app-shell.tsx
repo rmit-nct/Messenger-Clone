@@ -2,6 +2,7 @@
 // Slot contract: <AppShell sidebar main> — sidebar slot filled by feature barrels, main by page content
 import { useState, type ReactNode } from 'react'
 import { X, Menu } from 'lucide-react'
+import logo from '../../assets/logo.png'
 import { TopNavBar } from '../components/top-nav-bar'
 import { BottomNavBar } from '../components/bottom-nav-bar'
 import { UserMenu } from '../components/user-menu'
@@ -47,23 +48,33 @@ export function AppShell({ sidebar, main }: AppShellProps) {
       {/* Desktop/tablet sidebar */}
       <aside
         className={`hidden h-full flex-col border-r border-border bg-panel md:flex transition-all ${
-          sidebarCollapsed ? 'md:w-16' : 'md:w-80 lg:w-96'
+          sidebarCollapsed ? 'md:w-20' : 'md:w-80 lg:w-96'
         }`}
       >
-        {/* nav (compact) + hamburger */}
+        {/* brand + collapse toggle. White/10 circle behind toggle; title hidden when collapsed */}
         <div className="flex items-center justify-between border-b border-border p-3">
-          <span className="hidden text-lg font-extrabold tracking-tighter text-cyan md:block lg:block">
-            NEO Messenger
-          </span>
+          <div className="flex min-w-0 items-center gap-2">
+            <img
+              src={logo}
+              alt="NEO Messenger logo"
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+            />
+            {!sidebarCollapsed && (
+              <span className="truncate text-lg font-extrabold tracking-tighter text-cyan">
+                NEO Messenger
+              </span>
+            )}
+          </div>
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onClick={() => setSidebarCollapsed((c) => !c)}
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-expanded={!sidebarCollapsed}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-muted-foreground transition-colors hover:bg-white/20 hover:text-foreground"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">{sidebar}</div>
+        <div className="flex-1 overflow-hidden">{sidebar}</div>
         <div className="border-t border-border p-2">
           <UserMenu />
         </div>
