@@ -142,10 +142,6 @@ Messenger-Clone/
 ├── docs/
 │   ├── superpowers/specs/
 │   │   └── 2026-08-22-file-architecture-design.md
-│   ├── NEO_Messenger_Clone_SRS.md
-│   ├── NEO_Messenger_Clone_UX_Plan.md
-│   ├── NEO_Messenger_Clone_Stitch_Design_Brief.md
-│   ├── GIT_WORKFLOW.md
 │   └── (weekly reports)
 ├── screenshots/                 # deliverable; .gitkeep now
 ├── supabase/
