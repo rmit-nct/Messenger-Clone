@@ -144,6 +144,24 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+@utility thin-scrollbar {
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: var(--muted-foreground);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

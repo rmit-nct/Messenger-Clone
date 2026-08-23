@@ -30,7 +30,7 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
             }}
             aria-label="Expand sidebar and search conversations"
             title="Search"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-muted-foreground transition-colors hover:bg-white/20 hover:text-foreground"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground transition-colors hover:bg-foreground/20 hover:text-foreground"
           >
             <Search className="h-5 w-5" />
           </button>

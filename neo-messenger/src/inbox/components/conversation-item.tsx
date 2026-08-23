@@ -30,8 +30,8 @@ export function ConversationItem({ conversation, active, compact }: Conversation
         title={title}
         aria-label={`Open conversation ${title}`}
         className={cn(
-          'relative flex items-center justify-center rounded-full hover:bg-white/10',
-          active && 'bg-cyan/10',
+          'relative flex items-center justify-center rounded-full hover:bg-foreground/10',
+          active && 'bg-cyan/15',
         )}
       >
         <div className="relative shrink-0">
@@ -50,12 +50,12 @@ export function ConversationItem({ conversation, active, compact }: Conversation
       tabIndex={0}
       aria-label={`Open conversation ${title}`}
       className={cn(
-        'group relative flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted',
-        active && 'bg-cyan/15 hover:bg-cyan/20',
+        'group relative flex cursor-pointer items-center gap-3 rounded-lg bg-foreground/10 px-3 py-2 transition-colors hover:bg-muted',
+        active && 'bg-cyan/10 hover:bg-cyan/15 dark:bg-cyan/15 dark:hover:bg-cyan/20',
       )}
     >
       {active && (
-        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-cyan" />
+        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-cyan/80 dark:bg-cyan" />
       )}
       <div className="relative shrink-0">
         <Avatar name={title} src={conversation.image_url} size="lg" />

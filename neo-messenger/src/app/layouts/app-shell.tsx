@@ -53,32 +53,34 @@ export function AppShell({ sidebar, main }: AppShellProps) {
         }`}
       >
         {/* brand — collapsed: logo only, centered, fixed size (no squish) */}
-        <div className="shrink-0 border-b border-border px-2 py-2 overflow-hidden">
-          {sidebarCollapsed ? (
-            <img
-              src={logo}
-              alt="NEO Messenger"
-              className="mx-auto h-9 w-9 shrink-0 rounded-full object-cover"
-            />
-          ) : (
+        <div className="shrink-0 overflow-hidden border-b border-border">
+          <div className="m-1.5 flex items-center justify-between rounded-lg bg-foreground/10 px-2 py-2">
+            {sidebarCollapsed ? (
+              <img
+                src={logo}
+                alt="NEO Messenger"
+                className="mx-auto h-9 w-9 shrink-0 rounded-full object-cover"
+              />
+            ) : (
             <div className="flex min-w-0 items-center gap-2">
               <img
                 src={logo}
                 alt="NEO Messenger logo"
                 className="h-9 w-9 shrink-0 rounded-full object-cover"
               />
-              <span className="truncate text-lg font-extrabold tracking-tighter text-cyan">
+              <span className="truncate text-lg font-extrabold tracking-tighter text-foreground dark:text-cyan">
                 NEO Messenger
               </span>
             </div>
           )}
+        </div>
         </div>
 
         {/* feature content — adapts to collapsed (icon rail) */}
         <div className="flex-1 overflow-y-auto">{sidebar(sidebarCollapsed, () => setSidebarCollapsed(false))}</div>
 
         <div className="shrink-0 border-t border-border p-2">
-          <UserMenu />
+          <UserMenu className="w-full" />
         </div>
 
         {/* floating collapse bubble — just right of the sidebar edge */}
@@ -87,7 +89,7 @@ export function AppShell({ sidebar, main }: AppShellProps) {
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-expanded={!sidebarCollapsed}
           title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="absolute -right-3.5 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-muted-foreground shadow-md transition-colors hover:bg-white/20 hover:text-foreground"
+          className="absolute -right-3.5 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-md transition-colors hover:bg-foreground/20 hover:text-foreground"
         >
           <Menu className="h-4 w-4" />
         </button>

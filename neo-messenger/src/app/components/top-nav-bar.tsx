@@ -16,7 +16,7 @@ export function TopNavBar({ onMenu }: { onMenu: () => void }) {
       </button>
       <div className="flex items-center gap-2">
         <img src={logo} alt="NEO Messenger logo" className="h-8 w-8 rounded-full object-cover" />
-        <span className="text-lg font-extrabold tracking-tighter text-cyan">NEO Messenger</span>
+        <span className="text-lg font-extrabold tracking-tighter text-foreground dark:text-cyan">NEO Messenger</span>
       </div>
       <div className="flex items-center gap-2">
         <Link
