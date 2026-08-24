@@ -1,10 +1,39 @@
-// Root component: provider composition + <AppRouter/> (stub until task 1.1/1.3)
-function App() {
+// Root: query provider + theme + router. Placeholder pages until feature tasks land
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './contexts/theme-context'
+import { AppShell } from './layouts/app-shell'
+import { PaneEmptyState } from './components/pane-empty-state'
+import { InboxListRegion } from '../inbox'
+
+// TODO 1.1: AuthProvider + guards; route guest pages (/login, /signup) here
+// TODO 1.6: wire real NewConversationDialog trigger; 2.1: /conversation/:id route + conversation pane
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
+})
+
+export default function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-3xl font-bold text-indigo-600">NEO Messenger</h1>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/inbox" replace />} />
+            <Route
+              path="/inbox"
+              element={
+                <AppShell
+                  sidebar={(collapsed, onExpand) => (
+                    <InboxListRegion collapsed={collapsed} onExpand={onExpand} />
+                  )}
+                  main={<PaneEmptyState />}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/inbox" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
-
-export default App
