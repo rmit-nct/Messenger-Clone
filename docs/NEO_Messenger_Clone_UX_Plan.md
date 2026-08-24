@@ -87,13 +87,13 @@ Common states convention used below: **empty** = first-use no-data; **loading** 
 - Main: hero (product name, tagline, primary CTA), three feature highlights (real-time chat, small groups, 24-hour stories), club footer.
 - Actions: Sign up (primary), Sign in (secondary).
 - States: loading = skeleton hero; error = inline retry banner; empty n/a; success n/a.
-- Responsive: single column centered ≤640 px; two-column features ≥768 px.
+- Responsive: single column centered <768 px; two-column features ≥768 px.
 - A11y: header/main/footer landmarks, focus rings, ≥4.5:1 contrast, alt text for any imagery.
 
 **Sign up** (`/signup`) — AuthLayout (centered card, logo, back-to-login link).
 - Form: email, password (min 8), confirm password; Zod validation; `aria-invalid` + `aria-describedby` errors; password visibility toggle; submit disabled while pending.
 - States: loading = button spinner + "Creating account…"; error = inline alert (duplicate email, weak password); success = redirect.
-- Responsive: full-width card (100% ≤640 px, max-w-md centered ≥641 px).
+- Responsive: full-width card (100% <768 px, max-w-md centered ≥768 px).
 - A11y: labelled fields, error announcements via `aria-live="assertive"`, autocomplete attributes.
 
 **Sign in** (`/login`) — Same layout.
@@ -121,7 +121,7 @@ Common states convention used below: **empty** = first-use no-data; **loading** 
 - Main: story tray (horizontal, above list) + conversation list (latest activity first).
 - Lists/cards: ConversationItem = avatar, name, preview (sender prefix "You:"/"Name:" in groups, "[Image]" for photos, "…is typing" for typing state), relative timestamp, unread badge; active conversation highlighted; unread items tinted.
 - States: empty = "No conversations yet" + "Start a conversation" CTA; loading = skeleton list; error = "Couldn't load conversations" + Retry; success = toast on conversation created.
-- Responsive: sidebar+detail on ≥640 px; mobile shows only the list here (detail lives at `/conversation/:id`).
+- Responsive: sidebar+detail on ≥768 px; mobile shows only the list here (detail lives at `/conversation/:id`).
 - A11y: list semantics (`role="list"`/nav), unread badge read as text ("3 unread"), search announced, focus management on dialog open/close.
 
 **Conversation** (`/conversation/:id`)
@@ -202,8 +202,8 @@ All components live under `src/components/` grouped by subsystem; message/story 
 | Breakpoint | Inbox behavior | Other screens |
 |---|---|---|
 | Desktop ≥1024 px | Two panes: fixed sidebar (320–380 px: story tray + search + list + profile footer) + conversation pane. Group info = right panel overlay. | Story viewer = centered card; dialogs = centered; lightbox full screen |
-| Tablet 640–1023 px | Same two-pane; sidebar collapses to 280 px with toggle (hamburger) | Same as desktop |
-| Mobile <640 px | **Single pane**: `/inbox` shows only the list; tapping opens `/conversation/:id` as a separate full-screen view with a back button. Never both at once. | Dialogs become bottom sheets; viewer full screen; composer stays at bottom (safe-area inset) |
+| Tablet 768–1023 px | Same two-pane; sidebar collapses to 280 px with toggle (hamburger) | Same as desktop |
+| Mobile <768 px | **Single pane**: `/inbox` shows only the list; tapping opens `/conversation/:id` as a separate full-screen view with a back button. Never both at once. | Dialogs become bottom sheets; viewer full screen; composer stays at bottom (safe-area inset) |
 
 Key decisions: mobile uses **one-at-a-time navigation** (list ⇄ conversation via routes, so back/forward buttons work); the story tray stays above the list on all sizes; auth screens are single centered cards everywhere; touch targets ≥44 px on mobile vs ≥40 px desktop; hover-only actions (message menu, reactions) get long-press/overflow equivalents on touch.
 
@@ -237,7 +237,7 @@ Key decisions: mobile uses **one-at-a-time navigation** (list ⇄ conversation v
 ## 8. Navigation Architecture
 
 - Routes as listed in §1; all auth-required routes redirect guests to `/login`; authenticated users visiting auth routes redirect to `/inbox`; users with incomplete profiles are forced to `/setup-profile`.
-- App shell = `/inbox` (sidebar always present ≥640 px) and `/conversation/:id` (detail pane). Mobile conversation view renders inside the shell with a back button (route-driven).
+- App shell = `/inbox` (sidebar always present ≥768 px) and `/conversation/:id` (detail pane). Mobile conversation view renders inside the shell with a back button (route-driven).
 - Dialogs (new conversation, group info, viewer list) are not routes; they open over the current screen and restore focus on close.
 - Story flows use routes (`/story/create`, `/stories/:userId`) so refresh/back work.
 - 404 catches unknown paths; guests land on `/`, auth users on `/inbox` (via guard).

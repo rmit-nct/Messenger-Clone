@@ -101,7 +101,7 @@ feature/
 
 | Folder | Sprint-1 task(s) | Later tasks |
 |---|---|---|
-| `app/` | 1.3 App Shell & responsive drawer | guards, providers |
+| `app/` | 1.3 App Shell + responsive drawer + breakpoint standard | guards, providers, pane-empty-state |
 | `auth/` | 1.1 Auth Service & protected routes (2 devs) + 1.2 Homepage/Auth UI | — |
 | `profile/` | 1.4 Profile setup + 1.5 Profile & Settings | avatar uploader |
 | `inbox/` | 1.6 Inbox UI frame | 2.5 Inbox list, 4.2 search, 4.3 unread badges |
@@ -183,9 +183,13 @@ neo-messenger/
 │   │   ├── router/
 │   │   │   └── app-router.tsx        # route table + guard wrapping
 │   │   ├── layouts/
-│   │   │   └── app-shell.tsx         # sidebar + main pane, skip link, avatar menu
+│   │   │   └── app-shell.tsx         # slot contract: <AppShell sidebar main>; responsive (sidebar<->drawer)
 │   │   ├── components/
-│   │   │   └── user-menu.tsx         # avatar dropdown: Profile / Settings / Sign out
+│   │   │   ├── user-menu.tsx         # avatar dropdown: Profile / Settings / Sign out
+│   │   │   ├── sidebar-nav.tsx       # compact nav (Chats/Stories/Settings) + profile footer
+│   │   │   ├── top-nav-bar.tsx       # mobile header: logo, +, avatar menu
+│   │   │   ├── bottom-nav-bar.tsx    # mobile: Chats / Stories / Profile / Settings
+│   │   │   └── pane-empty-state.tsx  # "Select a conversation" glass card (main slot placeholder)
 │   │   ├── pages/
 │   │   │   └── not-found-page.tsx
 │   │   ├── contexts/
@@ -316,7 +320,8 @@ neo-messenger/
 │       │   └── database.ts           # DB row types (= today's src/types/types.ts)
 │       └── constants/
 │           ├── limits.ts             # group 10, image 5MB, text 2000, caption 120
-│           └── realtime.ts           # channel names, event names
+│           ├── realtime.ts           # channel names, event names
+│           └── breakpoints.ts        # team breakpoints: mobile <768, tablet 768-1023, desktop ≥1024
 ├── src/test/
 │   ├── setup.ts                      # vitest setup: jest-dom, cleanup
 │   └── supabase-mock.ts              # mock supabase client
@@ -338,6 +343,34 @@ Restructure from the Vite starter state:
 - Rewrite `src/App.tsx` → `src/app/App.tsx` (replaces counter demo); `main.tsx` re-points imports.
 - Update `components.json` alias and `vite.config.ts` path alias: `@/components/ui` → `@/shared/ui`.
 - Keep `public/favicon.svg`, `public/icons.svg`, `src/assets/hero.png`, `src/index.css`.
+
+### 5.8 Team standards (breakpoints, shell contract, tokens)
+
+Adopted during sprint 1; supersedes earlier 640px breakpoint mentions in UX plan §5 and Stitch A6/B1 (those docs are updated).
+
+**Breakpoints (single source of truth: `shared/constants/breakpoints.ts`):**
+
+| Device | Range | Behavior |
+|---|---|---|
+| Mobile | <768 px | Single pane + drawer nav (top/bottom bars), dialogs → bottom sheets |
+| Tablet | 768–1023 px | Sidebar visible, collapsible via hamburger (280 px) |
+| Desktop | ≥1024 px | Full two-pane: sidebar 320–380 px + conversation pane |
+
+**AppShell slot contract (task 1.3):** `<AppShell sidebar={ReactNode} main={ReactNode}>`. All authed pages render inside the shell; sidebar content is composed from feature barrels (inbox list region + stories tray), never imported into `shared/`. Shell chrome (sidebar-nav, top/bottom nav bars, user menu, pane-empty-state) lives in `app/`.
+
+**Design tokens (`src/index.css` @theme, Stitch brief A2–A4 supersedes UX plan §9):**
+
+| Token | Dark | Light | Role |
+|---|---|---|---|
+| `bg` | `#171624` | `#f2f7fc` | Base background |
+| `panel` | `#02273a` | `#ffffff` | Sidebars, cards, dialogs, inputs, other bubbles |
+| `foreground` | `#fafafa` | `#171624` | Text |
+| `cyan` | `#8ce7ff` | `#8ce7ff` | Active, own bubbles, badges, focus ring |
+| `cyan-strong` | `#0369a1` | `#0369a1` | Cyan text/links on light surfaces |
+| `gold` | `#fbb916` | `#fbb916` | Attention, unread chips, story played |
+| `gold-strong` | `#b45309` | `#b45309` | Gold text on light surfaces |
+
+Borders = foreground 12–18% (dark) / neutral-200 (light); muted = foreground 60–70%; hover = cyan/gold tint 6–10%. Font: Inter (fontsource variable); radius sm 8 / md 12 / lg 16 / xl 20; utilities `scrollbar-hide`, `pb-safe` in `index.css`. shadcn semantic vars map onto these (primary = cyan, ring = cyan, destructive = red light / `#ffb4ab` dark).
 
 ## 6. Data-Flow Model (how "backend code" works)
 

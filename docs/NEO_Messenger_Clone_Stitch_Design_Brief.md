@@ -90,8 +90,8 @@ Every component has **light and dark variants** (token swap; identical layout). 
 ### A6. Responsive Layout Rules
 
 - **Desktop ≥1024 px:** two-pane inbox — fixed sidebar 320–380 px (story tray, search, list, profile footer) + conversation pane; dialogs centered; story viewer centered card; lightbox full-screen.
-- **Tablet 640–1023 px:** same two-pane; sidebar 280 px, collapsible via hamburger.
-- **Mobile <640 px:** single pane — list **or** conversation (never both), route-driven with back button; dialogs become bottom sheets; viewer full-screen; composer pinned bottom with safe-area inset; touch targets ≥44 px (40 px desktop).
+- **Tablet 768–1023 px:** same two-pane; sidebar 280 px, collapsible via hamburger.
+- **Mobile <768 px:** single pane — list **or** conversation (never both), route-driven with back button; dialogs become bottom sheets; viewer full-screen; composer pinned bottom with safe-area inset; touch targets ≥44 px (40 px desktop).
 - Story tray stays above the list at all sizes; long-press mirrors hover actions on touch.
 
 ### A7. State Specifications (applies to every screen)
@@ -117,7 +117,7 @@ Each block is self-contained for Stitch; reference Part A for tokens/components.
 
 ### B1. Landing (`/`)
 
-**Context:** Guest-only product intro and entry point. **Layout:** full-screen centered hero on base background; footer below. **Hierarchy:** product name (Display) → tagline (body) → CTA pair → three feature cards (2-col ≥768 px) → club footer. **Elements:** logo top-left, "Sign in" link top-right, primary "Sign up" (cyan), secondary "Sign in" (outline), feature cards (icon + title + line): "Real-time chat", "Small groups", "24-hour stories". **States:** loading = hero skeleton; error = InlineAlert + retry. **Responsive:** single column ≤640 px. **A11y:** header/main/footer landmarks, focus rings. **SRS:** General Pages; F12.
+**Context:** Guest-only product intro and entry point. **Layout:** full-screen centered hero on base background; footer below. **Hierarchy:** product name (Display) → tagline (body) → CTA pair → three feature cards (2-col ≥768 px) → club footer. **Elements:** logo top-left, "Sign in" link top-right, primary "Sign up" (cyan), secondary "Sign in" (outline), feature cards (icon + title + line): "Real-time chat", "Small groups", "24-hour stories". **States:** loading = hero skeleton; error = InlineAlert + retry. **Responsive:** single column <768 px; two-column features ≥768 px. **A11y:** header/main/footer landmarks, focus rings. **SRS:** General Pages; F12.
 
 ### B2. Sign in (`/login`)
 
