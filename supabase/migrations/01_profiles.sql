@@ -1,3 +1,50 @@
--- profiles table + RLS: auth-owned row, public read
+-- 01_profiles.sql
+-- profiles table (public) + RLS + auto-create row on user registration.
+-- The on_auth_user_created trigger covers ALL register paths (incl. email confirmation).
 
--- TODO: implement
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  display_name text not null,
+  avatar_url text null,
+  created_at timestamptz not null default now()
+);
+
+-- allow any public user to read profiles (needed for avatars / member lists; DM/group reads are gated by conversation RLS)
+alter table public.profiles enable row level security;
+
+create policy "profiles are readable by authenticated users"
+  on public.profiles for select
+  to authenticated
+  using (true);
+
+create policy "users can update own profile"
+  on public.profiles for update
+  to authenticated
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
+
+-- helper: default display_name from email
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (
+    new.id,
+    coalesce(
+      nullif(trim(new.raw_user_meta_data ->> 'display_name'), ''),
+      split_part(new.email, '@', 1)
+    )
+  );
+  return new;
+end;
+$$;
+
+-- fire on any new auth user (idempotent: drop-first so file re-running is safe)
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
