@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/theme-context'
 import { AppShell } from './layouts/app-shell'
 import { PaneEmptyState } from './components/pane-empty-state'
 import { InboxListRegion } from '../inbox'
+import { LandingPage, LoginPage, SignupPage, RecoverPage, ResetPasswordPage } from '../auth'
 
 // TODO 1.1: AuthProvider + guards; route guest pages (/login, /signup) here
 // TODO 1.6: wire real NewConversationDialog trigger; 2.1: /conversation/:id route + conversation pane
@@ -19,6 +20,13 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
+
+            <Route path="/landing-page" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/recover" element={<RecoverPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+
             <Route
               path="/inbox"
               element={
