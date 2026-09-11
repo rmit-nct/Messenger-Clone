@@ -1,11 +1,11 @@
-// InboxListRegion — sidebar slot: story tray + search + conversation list (shell sidebar + mobile drawer route)
-// Accepts `collapsed` so icon-rail mode drops text and centers avatars; search becomes a circular
-// icon button that expands the sidebar and focuses the real input.
+// InboxListRegion — sidebar slot: new-conversation + search + story tray + conversation list.
 import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
+import { Button } from '../../shared/ui/button'
 import { SearchBar } from './search-bar'
 import { ConversationList } from './conversation-list'
-import { StoryTray, StoryTraySkeleton } from '../../stories' // stories barrel
+import { NewConversationDialog } from './new-conversation-dialog'
+import { StoryTray, StoryTraySkeleton } from '../../stories'
 import type { TrayStory } from '../../stories'
 
 interface InboxListRegionProps {
@@ -18,10 +18,14 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
   const isListLoading = false
   const isStoriesLoading = false
   const [focusSearch, setFocusSearch] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   if (collapsed) {
     return (
       <div className="flex flex-col items-center gap-2 pt-2">
+        <Button size="icon" variant="ghost" aria-label="New conversation" onClick={() => setDialogOpen(true)}>
+          <Plus className="h-5 w-5" />
+        </Button>
         {onExpand && (
           <button
             onClick={() => {
@@ -36,12 +40,21 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
           </button>
         )}
         {isListLoading ? null : <ConversationList collapsed />}
+        <NewConversationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-3 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Chats
+        </span>
+        <Button size="icon-sm" variant="ghost" aria-label="New conversation" onClick={() => setDialogOpen(true)}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
       <SearchBar autoFocus={focusSearch} />
       {isStoriesLoading ? (
         <StoryTraySkeleton />
@@ -51,6 +64,7 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
         <StoryTray stories={trayStories} />
       )}
       {isListLoading ? null : <ConversationList />}
+      <NewConversationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }
