@@ -8,7 +8,7 @@ import { Input } from '@/shared/ui/input'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { FormField } from '@/shared/ui/forms/form-field'
 import { PasswordInput } from '@/shared/ui/forms/password-input'
-import { useAuth } from '@/auth/context/auth-context'
+import { useAuth } from '@/auth/context/auth-context-core'
 import { signupSchema, type SignupInput } from '../schemas/auth-schemas'
 import { showError } from '../utils/auth-error'
 

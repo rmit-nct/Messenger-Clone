@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn: (email, password) => run(() => auth.signIn(email, password)),
       signOut: () => run(() => auth.signOut()),
       resetPassword: (email) => run(() => auth.resetPassword(email)),
+      updatePassword: (newPassword) => run(() => auth.updatePassword(newPassword)),
     }),
     [user, session, loading],
   )

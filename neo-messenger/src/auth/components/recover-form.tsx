@@ -7,12 +7,12 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { FormField } from '@/shared/ui/forms/form-field'
-import { useAuth } from '@/auth/context/auth-context'
+import { useAuth } from '@/auth/context/auth-context-core'
 import { recoverSchema, type RecoverInput } from '../schemas/auth-schemas'
 import { showError } from '../utils/auth-error'
 
 export function RecoverForm() {
-  const { recoverPassword } = useAuth()
+  const { resetPassword } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
 
@@ -25,7 +25,7 @@ export function RecoverForm() {
   async function onSubmit(values: RecoverInput) {
     setServerError(null)
     try {
-      await recoverPassword(values.email)
+      await resetPassword(values.email)
       setSent(true)
     } catch (err) {
       setServerError(showError(err))

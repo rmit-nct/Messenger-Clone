@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
-import { useAuth } from '@/auth/context/auth-context'
+import { useAuth } from '@/auth/context/auth-context-core'
 import { loginSchema, type LoginInput } from '../schemas/auth-schemas'
 import { showError } from '../utils/auth-error'
 
