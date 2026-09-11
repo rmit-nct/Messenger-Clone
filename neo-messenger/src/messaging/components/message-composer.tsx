@@ -36,7 +36,7 @@ export function MessageComposer({
 
   async function submitText() {
     const content = text.trim()
-    if (!content || busy) return
+    if (!content || busy || disabled) return
     setBusy(true)
     setText('')
     resize()
@@ -50,6 +50,7 @@ export function MessageComposer({
   }
 
   function pickFile(selected: File | null) {
+    if (disabled) return
     if (!selected) return
     const result = validateImage(selected)
     if (!result.ok) {
@@ -60,7 +61,7 @@ export function MessageComposer({
   }
 
   async function submitImage() {
-    if (!file || busy) return
+    if (!file || busy || disabled) return
     setBusy(true)
     setProgress(0)
     try {
@@ -111,6 +112,7 @@ export function MessageComposer({
         <textarea
           ref={textareaRef}
           value={text}
+          disabled={disabled}
           rows={1}
           maxLength={MESSAGE_MAX}
           placeholder="Type a message..."
@@ -132,7 +134,7 @@ export function MessageComposer({
         />
 
         {file ? (
-          <Button onClick={submitImage} disabled={busy} aria-label="Send image">
+          <Button onClick={submitImage} disabled={disabled || busy} aria-label="Send image">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         ) : (
