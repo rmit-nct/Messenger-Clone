@@ -72,3 +72,36 @@ export interface MessageReaction {
     emoji: string
     created_at: string
 }
+
+export interface Member {
+  id: string
+  display_name: string
+  avatar_url: string | null
+}
+
+export interface InboxConversation {
+  id: string
+  type: ConversationType
+  title: string | null
+  image_url: string | null
+  last_message_at: string
+  last_message_preview: string | null
+  last_message_sender: string | null
+  unread_count: number
+  member_ids: string[]
+  other_user: Member | null
+}
+
+export interface MessageWithMeta {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string | null
+  is_deleted: boolean
+  edited_at: string | null
+  created_at: string
+  status: MessageStatus
+  sender: Member
+  attachment: { storage_path: string; mime_type: string; size: number } | null
+  reactions: { user_id: string; emoji: string }[]
+}
