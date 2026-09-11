@@ -101,12 +101,28 @@ insert into storage.buckets (id, name, public)
 values ('messages', 'messages', false)
 on conflict (id) do nothing;
 
+create or replace function public.storage_conversation_id(object_name text)
+returns uuid
+language plpgsql
+immutable
+set search_path = public
+as $$
+declare
+  cid uuid;
+begin
+  cid := (storage.foldername(object_name))[1]::uuid;
+  return cid;
+exception when others then
+  return null;
+end;
+$$;
+
 drop policy if exists "messages bucket read for members" on storage.objects;
 create policy "messages bucket read for members"
   on storage.objects for select to authenticated
   using (
     bucket_id = 'messages'
-    and public.is_conversation_member((storage.foldername(name))[1]::uuid, auth.uid())
+    and public.is_conversation_member(public.storage_conversation_id(name), auth.uid())
   );
 
 drop policy if exists "messages bucket write for members" on storage.objects;
@@ -114,10 +130,32 @@ create policy "messages bucket write for members"
   on storage.objects for insert to authenticated
   with check (
     bucket_id = 'messages'
-    and public.is_conversation_member((storage.foldername(name))[1]::uuid, auth.uid())
+    and public.is_conversation_member(public.storage_conversation_id(name), auth.uid())
   );
 
 drop policy if exists "messages bucket delete own" on storage.objects;
 create policy "messages bucket delete own"
   on storage.objects for delete to authenticated
   using (bucket_id = 'messages' and owner = auth.uid());
+
+create or replace function public.protect_message_columns()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.id <> old.id
+     or new.conversation_id <> old.conversation_id
+     or new.sender_id <> old.sender_id
+     or new.content is distinct from old.content
+     or new.created_at <> old.created_at then
+    raise exception 'cannot modify message identity/content columns';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_message_columns on public.messages;
+create trigger protect_message_columns
+  before update on public.messages
+  for each row execute function public.protect_message_columns();
