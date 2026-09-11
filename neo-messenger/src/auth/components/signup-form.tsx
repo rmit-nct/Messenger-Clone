@@ -8,6 +8,14 @@ import { Input } from '@/shared/ui/input'
 import { Alert, AlertDescription } from '@/shared/ui/alert'
 import { FormField } from '@/shared/ui/forms/form-field'
 import { PasswordInput } from '@/shared/ui/forms/password-input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog'
 import { useAuth } from '@/auth/context/auth-context-core'
 import { signupSchema, type SignupInput } from '../schemas/auth-schemas'
 import { showError } from '../utils/auth-error'
@@ -23,6 +31,8 @@ export function SignupForm() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [signedUpEmail, setSignedUpEmail] = useState('')
 
   const {
     register,
@@ -37,15 +47,21 @@ export function SignupForm() {
   async function onSubmit(values: SignupInput) {
     setServerError(null)
     try {
-      await signUp(values.email, values.password)
-      navigate('/setup-profile', { replace: true })
+      const { needsEmailConfirmation } = await signUp(values.email, values.password)
+      if (needsEmailConfirmation) {
+        setSignedUpEmail(values.email)
+        setShowConfirm(true)
+      } else {
+        navigate('/setup-profile', { replace: true })
+      }
     } catch (err) {
       setServerError(showError(err))
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <div aria-live="assertive">
         {serverError && (
           <Alert variant="destructive" role="alert">
@@ -119,5 +135,27 @@ export function SignupForm() {
         {isSubmitting ? 'Creating account...' : 'Create Account'}
       </Button>
     </form>
+
+      <Dialog
+        open={showConfirm}
+        onOpenChange={(next) => {
+          setShowConfirm(next)
+          if (!next) navigate('/login', { replace: true })
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm your email</DialogTitle>
+            <DialogDescription>
+              We&apos;ve sent a confirmation link to {signedUpEmail}. Please confirm your email,
+              then sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => navigate('/login', { replace: true })}>Back to sign in</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

@@ -1,5 +1,6 @@
 const MESSAGES: Record<string, string> = {
   'Invalid login credentials': 'Incorrect email or password.',
+  'Email not confirmed': 'Please confirm your email before signing in. Check your inbox for the confirmation link.',
   'User already registered': 'This email has already been registered.',
   'Password should be at least 8 characters': 'Password is too short.',
   'New password should be different from the old password':

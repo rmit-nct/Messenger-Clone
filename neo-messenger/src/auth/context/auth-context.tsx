@@ -44,7 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       session,
       loading,
-      signUp: (email, password) => run(() => auth.signUp(email, password)),
+      signUp: async (email, password) => {
+        const { data, error } = await auth.signUp(email, password)
+        if (error) throw new Error(error.message)
+        return { needsEmailConfirmation: !data.session }
+      },
       signIn: (email, password) => run(() => auth.signIn(email, password)),
       signOut: () => run(() => auth.signOut()),
       resetPassword: (email) => run(() => auth.resetPassword(email)),
