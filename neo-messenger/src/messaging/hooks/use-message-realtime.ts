@@ -45,11 +45,14 @@ export function useMessageRealtime({ conversationId, currentUserId, members }: O
       queryClient.setQueryData<MessagePages>(messagesKey(conversationId), (existing) => {
         if (!existing) return existing
         const flat = updater(existing.pages.flatMap((page) => page.messages))
+        const sorted = [...flat].sort((a, b) =>
+          a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0,
+        )
         return {
           ...existing,
           pages: [
             {
-              messages: flat,
+              messages: sorted,
               hasMore: existing.pages[existing.pages.length - 1]?.hasMore ?? false,
             },
           ],

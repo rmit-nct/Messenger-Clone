@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
+import { useAuth } from '@/auth'
 import { useConversationList } from '../hooks/use-conversation-list'
 import { ConversationItem } from './conversation-item'
 import { Skeleton } from '../../shared/ui/skeleton'
@@ -13,6 +14,7 @@ interface ConversationListProps {
 
 export function ConversationList({ collapsed = false }: ConversationListProps) {
   const { id: activeId } = useParams()
+  const { user } = useAuth()
   const { conversations, isLoading, isError, refetch } = useConversationList()
   const { onlineUserIds } = usePresence()
 
@@ -40,7 +42,7 @@ export function ConversationList({ collapsed = false }: ConversationListProps) {
             conversation={c}
             active={c.id === activeId}
             compact
-            online={c.member_ids.some((m) => onlineUserIds.has(m))}
+            online={c.member_ids.some((memberId) => memberId !== user?.id && onlineUserIds.has(memberId))}
           />
         ))}
       </div>
@@ -54,7 +56,7 @@ export function ConversationList({ collapsed = false }: ConversationListProps) {
           key={c.id}
           conversation={c}
           active={c.id === activeId}
-          online={c.member_ids.some((m) => onlineUserIds.has(m))}
+          online={c.member_ids.some((memberId) => memberId !== user?.id && onlineUserIds.has(memberId))}
         />
       ))}
     </div>

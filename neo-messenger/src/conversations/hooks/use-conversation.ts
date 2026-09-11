@@ -42,12 +42,18 @@ export function useConversation(conversationId: string) {
       avatar_url: null,
     }
 
+  const flatMessages = messagesQuery.data?.pages.flatMap((p) => p.messages) ?? []
+  const messages = [...flatMessages].sort((a, b) =>
+    a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0,
+  )
+  const lastMessageId = messages.length ? messages[messages.length - 1].id : null
+
   useEffect(() => {
-    if (!currentUserId || !metaQuery.data) return
+    if (!currentUserId || !lastMessageId) return
     void markConversationRead(conversationId, currentUserId).then(() => {
       void queryClient.invalidateQueries({ queryKey: inboxKey })
     })
-  }, [conversationId, currentUserId, metaQuery.data, queryClient])
+  }, [conversationId, currentUserId, lastMessageId, queryClient])
 
   useMessageRealtime({ conversationId, currentUserId, members })
 
@@ -57,7 +63,10 @@ export function useConversation(conversationId: string) {
       (existing) => {
         if (!existing) return existing
         const flat = updater(existing.pages.flatMap((p) => p.messages))
-        return { ...existing, pages: [{ messages: flat, hasMore: existing.pages[existing.pages.length - 1]?.hasMore ?? false }] }
+        const sorted = [...flat].sort((a, b) =>
+          a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0,
+        )
+        return { ...existing, pages: [{ messages: sorted, hasMore: existing.pages[existing.pages.length - 1]?.hasMore ?? false }] }
       },
     )
   }
@@ -154,11 +163,6 @@ export function useConversation(conversationId: string) {
   const discardMessage = (messageId: string) => {
     updateMessages((messages) => messages.filter((m) => m.id !== messageId))
   }
-
-  const flatMessages = messagesQuery.data?.pages.flatMap((p) => p.messages) ?? []
-  const messages = [...flatMessages].sort((a, b) =>
-    a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0,
-  )
 
   return {
     conversation: metaQuery.data?.conversation ?? null,
