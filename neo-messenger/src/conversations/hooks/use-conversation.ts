@@ -20,7 +20,7 @@ export function useConversation(conversationId: string) {
 
   const metaQuery = useQuery({
     queryKey: conversationKey(conversationId),
-    queryFn: () => fetchConversationMeta(conversationId),
+    queryFn: () => fetchConversationMeta(conversationId, currentUserId),
     enabled: !!conversationId,
   })
 
@@ -41,8 +41,6 @@ export function useConversation(conversationId: string) {
       display_name: 'You',
       avatar_url: null,
     }
-
-  const lastReadAt = useMemo(() => new Date().toISOString(), [conversationId])
 
   useEffect(() => {
     if (!currentUserId || !metaQuery.data) return
@@ -178,6 +176,6 @@ export function useConversation(conversationId: string) {
     deleteMessage: (messageId: string) => deleteMutation.mutate(messageId),
     toggleReaction: (messageId: string, emoji: string) => reactMutation.mutate({ messageId, emoji }),
     markRead,
-    lastReadAt,
+    lastReadAt: metaQuery.data?.lastReadAt ?? new Date(0).toISOString(),
   }
 }

@@ -44,11 +44,15 @@ export function useMessageRealtime({ conversationId, currentUserId, members }: O
     const patchMessages = (updater: (messages: MessageWithMeta[]) => MessageWithMeta[]) => {
       queryClient.setQueryData<MessagePages>(messagesKey(conversationId), (existing) => {
         if (!existing) return existing
+        const flat = updater(existing.pages.flatMap((page) => page.messages))
         return {
           ...existing,
-          pages: existing.pages.map((page, index) =>
-            index === 0 ? { ...page, messages: updater(page.messages) } : page,
-          ),
+          pages: [
+            {
+              messages: flat,
+              hasMore: existing.pages[existing.pages.length - 1]?.hasMore ?? false,
+            },
+          ],
         }
       })
     }

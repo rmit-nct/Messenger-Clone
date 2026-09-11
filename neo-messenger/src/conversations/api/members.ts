@@ -4,10 +4,12 @@ import type { Conversation, Member } from '../../shared/types/database'
 export interface ConversationMeta {
   conversation: Conversation
   members: Member[]
+  lastReadAt: string | null
 }
 
 interface MemberRow {
   user_id: string
+  last_read_at: string
   profiles: Member | Member[] | null
 }
 
@@ -16,23 +18,28 @@ function firstOf<T>(value: T | T[] | null): T | null {
   return value ?? null
 }
 
-export async function fetchConversationMeta(conversationId: string): Promise<ConversationMeta> {
+export async function fetchConversationMeta(
+  conversationId: string,
+  userId: string,
+): Promise<ConversationMeta> {
   const [conversationResult, membersResult] = await Promise.all([
     supabase.from('conversations').select('*').eq('id', conversationId).maybeSingle(),
     supabase
       .from('conversation_members')
-      .select('user_id, profiles!conversation_members_user_id_fkey(id, display_name, avatar_url)')
+      .select('user_id, last_read_at, profiles!conversation_members_user_id_fkey(id, display_name, avatar_url)')
       .eq('conversation_id', conversationId),
   ])
   if (conversationResult.error) throw new Error(conversationResult.error.message)
   if (membersResult.error) throw new Error(membersResult.error.message)
   if (!conversationResult.data) throw new Error('Conversation not found')
 
-  const members = ((membersResult.data ?? []) as unknown as MemberRow[])
+  const rows = (membersResult.data ?? []) as unknown as MemberRow[]
+  const members = rows
     .map((row) => firstOf(row.profiles))
     .filter((member): member is Member => member !== null)
+  const lastReadAt = rows.find((row) => row.user_id === userId)?.last_read_at ?? null
 
-  return { conversation: conversationResult.data as Conversation, members }
+  return { conversation: conversationResult.data as Conversation, members, lastReadAt }
 }
 
 export async function markConversationRead(conversationId: string, userId: string): Promise<void> {
