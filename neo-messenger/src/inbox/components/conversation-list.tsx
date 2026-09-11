@@ -5,6 +5,7 @@ import { ConversationItem } from './conversation-item'
 import { Skeleton } from '../../shared/ui/skeleton'
 import { ErrorState } from '../../shared/ui/error-state'
 import { EmptyState } from '../../shared/ui/empty-state'
+import { usePresence } from '../../messaging'
 
 interface ConversationListProps {
   collapsed?: boolean
@@ -13,7 +14,7 @@ interface ConversationListProps {
 export function ConversationList({ collapsed = false }: ConversationListProps) {
   const { id: activeId } = useParams()
   const { conversations, isLoading, isError, refetch } = useConversationList()
-  const onlineUserIds = new Set<string>()
+  const { onlineUserIds } = usePresence()
 
   if (isLoading) return <ConversationListSkeleton />
   if (isError) {
