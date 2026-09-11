@@ -1,3 +1,15 @@
-// story tray (via stories barrel) + search + list
+import { InboxListRegion } from '../components/inbox-list-region'
+import { PaneEmptyState } from '../../app/components/pane-empty-state'
 
-// TODO: implement
+export function InboxPage() {
+  return (
+    <>
+      <div className="h-full md:hidden">
+        <InboxListRegion />
+      </div>
+      <div className="hidden h-full items-center justify-center md:flex">
+        <PaneEmptyState />
+      </div>
+    </>
+  )
+}

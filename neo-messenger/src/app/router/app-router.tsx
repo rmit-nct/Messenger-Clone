@@ -1,8 +1,5 @@
-// route table, lazy-loaded pages, guard wrapping
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { AppShell } from '../layouts/app-shell'
-import { PaneEmptyState } from '../components/pane-empty-state'
-import { InboxListRegion } from '../../inbox'
+import { ShellLayout } from '../layouts/shell-layout'
 import {
   GuestOnly,
   RequireAuth,
@@ -12,8 +9,9 @@ import {
   RecoverPage,
   ResetPasswordPage,
 } from '../../auth'
+import { InboxPage } from '../../inbox'
+import { ConversationPage } from '../../conversations'
 
-// TODO 1.6: wire real NewConversationDialog trigger; 2.1: /conversation/:id route + conversation pane
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -34,21 +32,12 @@ export function AppRouter() {
         <Route
           element={
             <RequireAuth>
-              <Outlet />
+              <ShellLayout />
             </RequireAuth>
           }
         >
-          <Route
-            path="/inbox"
-            element={
-              <AppShell
-                sidebar={(collapsed, onExpand) => (
-                  <InboxListRegion collapsed={collapsed} onExpand={onExpand} />
-                )}
-                main={<PaneEmptyState />}
-              />
-            }
-          />
+          <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/conversation/:id" element={<ConversationPage />} />
         </Route>
 
         <Route path="/landing-page" element={<Navigate to="/" replace />} />
