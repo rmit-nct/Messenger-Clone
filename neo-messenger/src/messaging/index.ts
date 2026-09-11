@@ -1,3 +1,2 @@
-// messaging public barrel (bubbles, reactions, typing, realtime)
-
-// TODO: implement
+export { useMessageRealtime } from './hooks/use-message-realtime'
+export { toggleReaction } from './api/reactions'
