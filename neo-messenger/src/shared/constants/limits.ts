@@ -1,3 +1,9 @@
-// group cap 10, image 5MB, text 2000 chars, caption 120
-
-// TODO: implement
+export const GROUP_MAX = 10
+export const MESSAGE_MAX = 2000
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024
+export const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp'] as const
+export const MESSAGES_PAGE_SIZE = 30
+export const TYPING_IDLE_MS = 3000
+export const TYPING_THROTTLE_MS = 1500
+export const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
+export const USERS_SEARCH_LIMIT = 20
