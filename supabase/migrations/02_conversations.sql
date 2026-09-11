@@ -221,3 +221,21 @@ as $$
   ) ou on c.type = 'direct'
   order by c.last_message_at desc;
 $$;
+
+create or replace function public.protect_conversation_columns()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.id <> old.id or new.type <> old.type or new.created_by <> old.created_by then
+    raise exception 'cannot modify conversation identity columns';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_conversation_columns on public.conversations;
+create trigger protect_conversation_columns
+  before update on public.conversations
+  for each row execute function public.protect_conversation_columns();
