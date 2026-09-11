@@ -38,7 +38,8 @@ export function ConversationPage() {
     conversation.members.find((m) => m.id !== conversation.currentUser?.id)?.avatar_url ??
     null
 
-  const onlineCount = conversation.members.filter((m) => onlineUserIds.has(m.id)).length
+  const otherMembers = conversation.members.filter((m) => m.id !== conversation.currentUser?.id)
+  const onlineCount = otherMembers.filter((m) => onlineUserIds.has(m.id)).length
 
   return (
     <div className="flex h-full flex-col">
@@ -78,9 +79,12 @@ export function ConversationPage() {
         lastReadAt={conversation.lastReadAt}
         onRefetch={conversation.refetch}
         onDelete={conversation.deleteMessage}
+        onDiscard={conversation.discardMessage}
         onToggleReaction={conversation.toggleReaction}
         onRetry={(message) => {
-          if (message.content) void conversation.sendText(message.content)
+          if (!message.content) return
+          conversation.discardMessage(message.id)
+          void conversation.sendText(message.content)
         }}
       />
 

@@ -151,6 +151,10 @@ export function useConversation(conversationId: string) {
     },
   })
 
+  const discardMessage = (messageId: string) => {
+    updateMessages((messages) => messages.filter((m) => m.id !== messageId))
+  }
+
   const flatMessages = messagesQuery.data?.pages.flatMap((p) => p.messages) ?? []
   const messages = [...flatMessages].sort((a, b) =>
     a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0,
@@ -174,6 +178,7 @@ export function useConversation(conversationId: string) {
     sendText,
     sendImage,
     deleteMessage: (messageId: string) => deleteMutation.mutate(messageId),
+    discardMessage,
     toggleReaction: (messageId: string, emoji: string) => reactMutation.mutate({ messageId, emoji }),
     markRead,
     lastReadAt: metaQuery.data?.lastReadAt ?? new Date(0).toISOString(),

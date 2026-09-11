@@ -17,6 +17,7 @@ interface MessageBubbleProps {
   onDelete: (messageId: string) => void
   onToggleReaction: (messageId: string, emoji: string) => void
   onRetry?: () => void
+  onDiscard?: (messageId: string) => void
 }
 
 export function MessageBubble({
@@ -26,6 +27,7 @@ export function MessageBubble({
   onDelete,
   onToggleReaction,
   onRetry,
+  onDiscard,
 }: MessageBubbleProps) {
   const own = message.sender_id === currentUserId
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -105,7 +107,16 @@ export function MessageBubble({
           <span className="tabular-nums">{formatTime(message.created_at)}</span>
           {own && message.status === 'sending' && <span>• sending…</span>}
           {own && message.status === 'sent' && <Check className="h-3 w-3" aria-label="Sent" />}
-          {own && message.status === 'failed' && (
+          {own && message.status === 'failed' && message.attachment && (
+            <button
+              type="button"
+              onClick={() => onDiscard?.(message.id)}
+              className="flex items-center gap-0.5 text-destructive"
+            >
+              <AlertCircle className="h-3 w-3" /> Remove
+            </button>
+          )}
+          {own && message.status === 'failed' && !message.attachment && (
             <button type="button" onClick={onRetry} className="flex items-center gap-0.5 text-destructive">
               <AlertCircle className="h-3 w-3" /> Failed — retry
             </button>

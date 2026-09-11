@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { MessageSquare } from 'lucide-react'
 import { MessageBubble, DateSeparator, UnreadDivider, TypingIndicator } from '../../messaging'
 import { Skeleton } from '../../shared/ui/skeleton'
@@ -21,6 +21,7 @@ interface MessageListProps {
   lastReadAt: string
   onRefetch: () => void
   onDelete: (messageId: string) => void
+  onDiscard: (messageId: string) => void
   onToggleReaction: (messageId: string, emoji: string) => void
   onRetry: (message: MessageWithMeta) => void
 }
@@ -38,6 +39,7 @@ export function MessageList({
   lastReadAt,
   onRefetch,
   onDelete,
+  onDiscard,
   onToggleReaction,
   onRetry,
 }: MessageListProps) {
@@ -49,28 +51,54 @@ export function MessageList({
   )
   const dividerIndex = firstUnreadId ? messages.findIndex((m) => m.id === firstUnreadId) : -1
   const [pendingNew, setPendingNew] = useState(0)
+  const lastMessageIdRef = useRef<string | undefined>(undefined)
+  const firstMessageIdRef = useRef<string | undefined>(undefined)
+  const pendingScrollHeightRef = useRef<number | null>(null)
 
   useEffect(() => {
     const sentinel = topRef.current
     if (!sentinel || !hasNextPage) return
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) fetchNextPage()
+      if (entries[0]?.isIntersecting) {
+        const el = scrollRef.current
+        if (el) pendingScrollHeightRef.current = el.scrollHeight
+        fetchNextPage()
+      }
     })
     observer.observe(sentinel)
     return () => observer.disconnect()
   }, [hasNextPage, fetchNextPage])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150
-    if (nearBottom || messages.length <= 1) {
+    const lastId = messages[messages.length - 1]?.id
+    const firstId = messages[0]?.id
+    const previousLast = lastMessageIdRef.current
+    const previousFirst = firstMessageIdRef.current
+
+    if (lastId !== undefined && previousLast === undefined) {
       el.scrollTop = el.scrollHeight
       setPendingNew(0)
-    } else {
-      setPendingNew((count) => count + 1)
+    } else if (lastId !== undefined && previousLast !== undefined && lastId !== previousLast) {
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150
+      if (nearBottom || messages.length <= 1) {
+        el.scrollTop = el.scrollHeight
+        setPendingNew(0)
+      } else {
+        setPendingNew((count) => count + 1)
+      }
+    } else if (firstId !== undefined && previousFirst !== undefined && firstId !== previousFirst) {
+      const prevHeight = pendingScrollHeightRef.current
+      if (prevHeight !== null) {
+        el.scrollTop += el.scrollHeight - prevHeight
+        pendingScrollHeightRef.current = null
+      }
     }
-  }, [messages.length])
+
+    lastMessageIdRef.current = lastId
+    firstMessageIdRef.current = firstId
+  }, [messages])
 
   if (isLoading) {
     return (
@@ -115,6 +143,7 @@ export function MessageList({
               currentUserId={currentUserId}
               isGroup={isGroup}
               onDelete={onDelete}
+              onDiscard={onDiscard}
               onToggleReaction={onToggleReaction}
               onRetry={() => onRetry(message)}
             />
