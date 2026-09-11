@@ -11,6 +11,11 @@ create table if not exists public.messages (
   created_at timestamptz not null default now()
 );
 
+-- reconcile schema drift from an older definition: image-only messages store a NULL content.
+alter table public.messages add column if not exists is_deleted boolean not null default false;
+alter table public.messages add column if not exists edited_at timestamptz null;
+alter table public.messages alter column content drop not null;
+
 create index if not exists messages_conversation_created_idx
   on public.messages (conversation_id, created_at desc);
 

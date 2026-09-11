@@ -2,12 +2,14 @@
 // Avatar left, theme toggle right. Dropdown anchors to the avatar (inner relative),
 // opening downward unless bottom-of-viewport forces upward; rightSide flips outward in top-nav.
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { LogOut, Settings, User, Sun, Moon } from 'lucide-react'
 import { Avatar } from '../../shared/ui/avatar'
 import { Button } from '../../shared/ui/button'
 import { cn } from '../../shared/lib/utils'
 import { useTheme } from '../contexts/theme'
+import { useAuth } from '../../auth'
 
 // TODO 1.1: real session from auth context; 1.4: real avatar/name
 const ME = { name: 'Guest', avatarUrl: null }
@@ -25,7 +27,23 @@ export function UserMenu({ className }: UserMenuProps) {
   const [below, setBelow] = useState(true)
   const [rightSide, setRightSide] = useState(false)
   const [buttonEl, setButtonEl] = useState<HTMLButtonElement | null>(null)
+  const [signingOut, setSigningOut] = useState(false)
   const { resolved, setTheme } = useTheme()
+  const { signOut } = useAuth()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+      setOpen(false)
+      queryClient.clear()
+      navigate('/', { replace: true })
+    } catch {
+      setSigningOut(false)
+    }
+  }
 
   const toggle = (el: HTMLButtonElement) => {
     const next = !open
@@ -80,10 +98,11 @@ export function UserMenu({ className }: UserMenuProps) {
                 <Settings className="h-4 w-4" /> Settings
               </Link>
               <button
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-muted"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-muted disabled:opacity-50"
               >
-                <LogOut className="h-4 w-4" /> Sign out
+                <LogOut className="h-4 w-4" /> {signingOut ? 'Signing out…' : 'Sign out'}
               </button>
             </div>
           </>

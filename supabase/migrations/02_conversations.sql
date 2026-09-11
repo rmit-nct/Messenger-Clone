@@ -11,6 +11,13 @@ create table if not exists public.conversations (
   last_message_at timestamptz not null default now()
 );
 
+-- reconcile schema drift from an older definition (create table if not exists
+-- does not alter existing columns): direct chats store a NULL title.
+alter table public.conversations add column if not exists title text null;
+alter table public.conversations add column if not exists image_url text null;
+alter table public.conversations alter column title drop not null;
+alter table public.conversations alter column image_url drop not null;
+
 create table if not exists public.conversation_members (
   conversation_id uuid not null references public.conversations(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -24,6 +31,10 @@ create index if not exists conversation_members_user_idx
 
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
+
+-- idempotent across an older definition that used different parameter names
+-- (Postgres refuses to rename params via create or replace: 42P13)
+drop function if exists public.is_conversation_member(uuid, uuid) cascade;
 
 create or replace function public.is_conversation_member(p_conversation uuid, p_user uuid)
 returns boolean

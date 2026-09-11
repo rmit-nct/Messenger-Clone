@@ -23,6 +23,7 @@ export function ConversationList({ collapsed = false }: ConversationListProps) {
     return <ErrorState title="Couldn't load conversations" description="Check your connection and try again." onRetry={() => refetch()} />
   }
   if (conversations.length === 0) {
+    if (collapsed) return null
     return (
       <EmptyState
         icon={<MessageSquare className="h-7 w-7" />}
