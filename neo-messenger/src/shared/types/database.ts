@@ -26,13 +26,6 @@ export interface Conversation {
     last_message_at: string
 }
 
-export interface ConversationMember {
-    conversation_id: string
-    user_id: string
-    joined_at: string
-    last_read_at: string
-}
-
 export interface Message {
     id: string
     conversation_id: string
@@ -104,4 +97,15 @@ export interface MessageWithMeta {
   sender: Member
   attachment: { storage_path: string; mime_type: string; size: number } | null
   reactions: { user_id: string; emoji: string }[]
+}
+
+export interface ConversationMember extends Member {
+  is_admin: boolean
+}
+
+export interface ConversationMediaItem {
+  id: string
+  storage_path: string
+  created_at: string
+  sender_id: string
 }
