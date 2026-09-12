@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Plus, Search } from 'lucide-react'
 import { Button } from '../../shared/ui/button'
 import { SearchBar } from './search-bar'
+import { SearchResults } from './search-results'
 import { ConversationList } from './conversation-list'
 import { NewConversationDialog } from './new-conversation-dialog'
 import { StoryTray, StoryTraySkeleton } from '../../stories'
@@ -19,6 +20,7 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
   const isStoriesLoading = false
   const [focusSearch, setFocusSearch] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [query, setQuery] = useState('')
 
   if (collapsed) {
     return (
@@ -55,15 +57,21 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
           <Plus className="h-4 w-4" />
         </Button>
       </div>
-      <SearchBar autoFocus={focusSearch} />
-      {isStoriesLoading ? (
-        <StoryTraySkeleton />
-      ) : trayStories.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Stories appear here</p>
+      <SearchBar value={query} onChange={setQuery} autoFocus={focusSearch} />
+      {query.trim() ? (
+        <SearchResults query={query} onNavigate={() => setQuery('')} />
       ) : (
-        <StoryTray stories={trayStories} />
+        <>
+          {isStoriesLoading ? (
+            <StoryTraySkeleton />
+          ) : trayStories.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Stories appear here</p>
+          ) : (
+            <StoryTray stories={trayStories} />
+          )}
+          {isListLoading ? null : <ConversationList />}
+        </>
       )}
-      {isListLoading ? null : <ConversationList />}
       <NewConversationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )

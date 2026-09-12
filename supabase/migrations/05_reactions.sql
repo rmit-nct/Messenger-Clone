@@ -9,6 +9,33 @@ create table if not exists public.message_reactions (
   primary key (message_id, user_id)
 );
 
+-- reconcile schema drift from an older definition: the upsert needs a unique
+-- constraint on (message_id, user_id) for ON CONFLICT to infer the target.
+delete from public.message_reactions a
+using public.message_reactions b
+where a.ctid < b.ctid and a.message_id = b.message_id and a.user_id = b.user_id;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint c
+    join pg_class t on t.oid = c.conrelid
+    join pg_namespace n on n.oid = t.relnamespace
+    where n.nspname = 'public'
+      and t.relname = 'message_reactions'
+      and c.contype in ('p', 'u')
+      and c.conkey = (
+        select array_agg(a.attnum order by a.attnum)
+        from pg_attribute a
+        where a.attrelid = t.oid and a.attname in ('message_id', 'user_id')
+      )
+  ) then
+    alter table public.message_reactions
+      add constraint message_reactions_message_user_key unique (message_id, user_id);
+  end if;
+end $$;
+
 alter table public.message_reactions enable row level security;
 
 drop policy if exists "reactions readable by members" on public.message_reactions;

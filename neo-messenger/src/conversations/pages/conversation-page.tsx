@@ -43,7 +43,7 @@ export function ConversationPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-panel px-3 py-2">
+      <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-panel px-3">
         <Button variant="ghost" size="icon" aria-label="Back to inbox" onClick={() => navigate('/inbox')} className="md:hidden">
           <ArrowLeft className="h-5 w-5" />
         </Button>

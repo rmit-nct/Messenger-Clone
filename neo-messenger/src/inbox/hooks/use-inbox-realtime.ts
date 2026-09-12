@@ -16,6 +16,11 @@ export function useInboxRealtime() {
     const channel = supabase
       .channel('inbox:changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, invalidate)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'conversation_members' },
+        invalidate,
+      )
       .subscribe()
 
     return () => {

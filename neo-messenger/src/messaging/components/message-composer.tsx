@@ -76,7 +76,7 @@ export function MessageComposer({
   }
 
   return (
-    <div className="border-t border-border bg-panel p-3">
+    <div className="flex min-h-16 flex-col justify-center border-t border-border bg-panel px-3 py-2.5">
       {file && (
         <div className="mb-2 flex items-center gap-2 rounded-lg border border-border p-2">
           <span className="flex-1 truncate text-sm">{file.name}</span>

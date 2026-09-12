@@ -172,3 +172,15 @@ drop trigger if exists protect_conversation_columns on public.conversations;
 create trigger protect_conversation_columns
   before update on public.conversations
   for each row execute function public.protect_conversation_columns();
+
+-- realtime: notify members when they are added, so a new conversation appears
+-- in their inbox immediately even before any message is sent.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'conversation_members'
+  ) then
+    alter publication supabase_realtime add table public.conversation_members;
+  end if;
+end $$;
