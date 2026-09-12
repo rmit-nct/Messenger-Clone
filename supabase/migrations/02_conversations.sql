@@ -26,6 +26,17 @@ create table if not exists public.conversation_members (
   primary key (conversation_id, user_id)
 );
 
+-- assignable admin role; creator is derived from conversations.created_by
+alter table public.conversation_members
+  add column if not exists is_admin boolean not null default false;
+
+update public.conversation_members m
+  set is_admin = true
+  where exists (
+    select 1 from public.conversations c
+    where c.id = m.conversation_id and c.created_by = m.user_id
+  );
+
 create index if not exists conversation_members_user_idx
   on public.conversation_members (user_id);
 
@@ -140,8 +151,8 @@ begin
   values ('group', nullif(trim(p_title), ''), me)
   returning id into new_id;
 
-  insert into public.conversation_members (conversation_id, user_id)
-  values (new_id, me);
+  insert into public.conversation_members (conversation_id, user_id, is_admin)
+  values (new_id, me, true);
 
   foreach member in array coalesce(p_member_ids, array[]::uuid[]) loop
     if member <> me then
@@ -184,3 +195,163 @@ begin
     alter publication supabase_realtime add table public.conversation_members;
   end if;
 end $$;
+
+create or replace function public.add_conversation_members(p_conversation uuid, p_user_ids uuid[])
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  current_count int;
+  to_add int;
+begin
+  if me is null then raise exception 'not authenticated'; end if;
+  if not public.is_conversation_member(p_conversation, me) then
+    raise exception 'not a member of this conversation';
+  end if;
+
+  select count(*) into current_count
+  from public.conversation_members where conversation_id = p_conversation;
+
+  select count(distinct uid) into to_add
+  from unnest(coalesce(p_user_ids, array[]::uuid[])) as uid
+  where not exists (
+    select 1 from public.conversation_members
+    where conversation_id = p_conversation and user_id = uid
+  );
+
+  if current_count + to_add > 10 then
+    raise exception 'group cannot exceed 10 members';
+  end if;
+
+  insert into public.conversation_members (conversation_id, user_id)
+  select p_conversation, uid
+  from unnest(coalesce(p_user_ids, array[]::uuid[])) as uid
+  on conflict (conversation_id, user_id) do nothing;
+end;
+$$;
+
+create or replace function public.remove_conversation_member(p_conversation uuid, p_user_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  v_creator uuid;
+  target_admin boolean;
+  caller_creator boolean;
+  caller_admin boolean;
+begin
+  if me is null then raise exception 'not authenticated'; end if;
+
+  select created_by into v_creator from public.conversations where id = p_conversation;
+  if v_creator is null then raise exception 'conversation not found'; end if;
+
+  caller_creator := v_creator = me;
+  caller_admin := caller_creator or exists (
+    select 1 from public.conversation_members
+    where conversation_id = p_conversation and user_id = me and is_admin
+  );
+  if not caller_admin then raise exception 'admin only'; end if;
+
+  if p_user_id = me then raise exception 'you cannot remove yourself'; end if;
+  if p_user_id = v_creator then raise exception 'the creator cannot be removed'; end if;
+
+  select is_admin into target_admin from public.conversation_members
+    where conversation_id = p_conversation and user_id = p_user_id;
+  if target_admin is null then raise exception 'not a member'; end if;
+  if target_admin and not caller_creator then
+    raise exception 'only the creator can remove an admin';
+  end if;
+
+  delete from public.conversation_members
+    where conversation_id = p_conversation and user_id = p_user_id;
+end;
+$$;
+
+create or replace function public.set_conversation_admin(
+  p_conversation uuid,
+  p_user_id uuid,
+  p_is_admin boolean
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  v_creator uuid;
+  caller_creator boolean;
+  caller_admin boolean;
+  target_exists boolean;
+begin
+  if me is null then raise exception 'not authenticated'; end if;
+
+  select created_by into v_creator from public.conversations where id = p_conversation;
+  if v_creator is null then raise exception 'conversation not found'; end if;
+
+  caller_creator := v_creator = me;
+  caller_admin := caller_creator or exists (
+    select 1 from public.conversation_members
+    where conversation_id = p_conversation and user_id = me and is_admin
+  );
+  if not caller_admin then raise exception 'admin only'; end if;
+
+  if p_user_id = v_creator then raise exception 'the creator role cannot be changed'; end if;
+
+  select exists (
+    select 1 from public.conversation_members
+    where conversation_id = p_conversation and user_id = p_user_id
+  ) into target_exists;
+  if not target_exists then raise exception 'not a member'; end if;
+
+  if not p_is_admin and not caller_creator then
+    raise exception 'only the creator can remove admin';
+  end if;
+
+  update public.conversation_members
+    set is_admin = p_is_admin
+    where conversation_id = p_conversation and user_id = p_user_id;
+end;
+$$;
+
+create or replace function public.update_conversation(
+  p_conversation uuid,
+  p_title text,
+  p_image_path text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  caller_admin boolean;
+begin
+  if me is null then raise exception 'not authenticated'; end if;
+
+  caller_admin := exists (
+    select 1 from public.conversations c
+    where c.id = p_conversation
+      and (
+        c.created_by = me
+        or exists (
+          select 1 from public.conversation_members m
+          where m.conversation_id = c.id and m.user_id = me and m.is_admin
+        )
+      )
+  );
+  if not caller_admin then raise exception 'admin only'; end if;
+
+  update public.conversations
+    set title = coalesce(nullif(trim(p_title), ''), title),
+        image_url = coalesce(p_image_path, image_url)
+    where id = p_conversation;
+end;
+$$;
