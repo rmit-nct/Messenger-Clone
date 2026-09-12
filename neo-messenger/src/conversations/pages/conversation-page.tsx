@@ -40,9 +40,9 @@ export function ConversationPage() {
       : conversation.members.find((m) => m.id !== conversation.currentUser?.id)?.display_name ?? 'Direct message'
 
   const avatarSrc =
-    groupImage ??
-    conversation.members.find((m) => m.id !== conversation.currentUser?.id)?.avatar_url ??
-    null
+    conversation.conversation?.type === 'group'
+      ? groupImage
+      : (conversation.members.find((m) => m.id !== conversation.currentUser?.id)?.avatar_url ?? null)
 
   const otherMembers = conversation.members.filter((m) => m.id !== conversation.currentUser?.id)
   const onlineCount = otherMembers.filter((m) => onlineUserIds.has(m.id)).length

@@ -34,7 +34,7 @@ update public.conversation_members m
   set is_admin = true
   where exists (
     select 1 from public.conversations c
-    where c.id = m.conversation_id and c.created_by = m.user_id
+    where c.id = m.conversation_id and c.created_by = m.user_id and c.type = 'group'
   );
 
 create index if not exists conversation_members_user_idx
@@ -71,10 +71,23 @@ create policy "conversations insertable by creator"
   with check (created_by = auth.uid());
 
 drop policy if exists "conversations updatable by members" on public.conversations;
-create policy "conversations updatable by members"
+drop policy if exists "conversations updatable by admins" on public.conversations;
+create policy "conversations updatable by admins"
   on public.conversations for update to authenticated
-  using (public.is_conversation_member(id, auth.uid()))
-  with check (public.is_conversation_member(id, auth.uid()));
+  using (
+    created_by = auth.uid()
+    or exists (
+      select 1 from public.conversation_members m
+      where m.conversation_id = id and m.user_id = auth.uid() and m.is_admin
+    )
+  )
+  with check (
+    created_by = auth.uid()
+    or exists (
+      select 1 from public.conversation_members m
+      where m.conversation_id = id and m.user_id = auth.uid() and m.is_admin
+    )
+  );
 
 drop policy if exists "members readable by members" on public.conversation_members;
 create policy "members readable by members"
@@ -96,6 +109,9 @@ create policy "members update own read state"
   on public.conversation_members for update to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
+
+revoke update on public.conversation_members from anon, authenticated;
+grant update (last_read_at) on public.conversation_members to authenticated;
 
 create or replace function public.create_direct_conversation(other_user uuid)
 returns uuid

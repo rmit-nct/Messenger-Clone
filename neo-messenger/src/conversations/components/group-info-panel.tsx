@@ -196,6 +196,13 @@ export function ConversationInfoPanel({
               <div key={i} className="aspect-square animate-pulse rounded-lg bg-muted" />
             ))}
           </div>
+        ) : info.mediaError ? (
+          <div className="text-xs text-muted-foreground">
+            Couldn&apos;t load media.{' '}
+            <button type="button" className="underline" onClick={() => void info.refetchMedia()}>
+              Retry
+            </button>
+          </div>
         ) : info.media.length === 0 ? (
           <p className="text-xs text-muted-foreground">No media yet</p>
         ) : (
@@ -217,7 +224,7 @@ export function ConversationInfoPanel({
               size="sm"
               variant="ghost"
               onClick={() => setAddOpen(true)}
-              disabled={remaining <= 0}
+              disabled={remaining <= 0 || info.isMutating}
             >
               <UserPlus className="mr-1 h-3.5 w-3.5" /> Add
             </Button>
@@ -259,6 +266,7 @@ export function ConversationInfoPanel({
                       aria-label={`Make ${member.display_name} admin`}
                       title="Make admin"
                       onClick={() => void toggleAdmin(member)}
+                      disabled={info.isMutating}
                     >
                       <Shield className="h-3.5 w-3.5" />
                     </Button>
@@ -270,6 +278,7 @@ export function ConversationInfoPanel({
                       aria-label={`Remove ${member.display_name} as admin`}
                       title="Remove admin"
                       onClick={() => void toggleAdmin(member)}
+                      disabled={info.isMutating}
                     >
                       <Shield className="h-3.5 w-3.5 text-cyan-strong dark:text-cyan" />
                     </Button>
@@ -281,6 +290,7 @@ export function ConversationInfoPanel({
                       aria-label={`Remove ${member.display_name}`}
                       title="Remove from group"
                       onClick={() => setKickTarget(member)}
+                      disabled={info.isMutating}
                     >
                       <UserMinus className="h-3.5 w-3.5 text-destructive" />
                     </Button>
