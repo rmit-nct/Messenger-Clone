@@ -212,6 +212,14 @@ begin
     raise exception 'not a member of this conversation';
   end if;
 
+  if not exists (
+    select 1 from public.conversations where id = p_conversation and type = 'group'
+  ) then
+    raise exception 'not a group conversation';
+  end if;
+
+  perform 1 from public.conversations where id = p_conversation for update;
+
   select count(*) into current_count
   from public.conversation_members where conversation_id = p_conversation;
 
@@ -242,14 +250,17 @@ as $$
 declare
   me uuid := auth.uid();
   v_creator uuid;
+  v_type text;
   target_admin boolean;
   caller_creator boolean;
   caller_admin boolean;
 begin
   if me is null then raise exception 'not authenticated'; end if;
 
-  select created_by into v_creator from public.conversations where id = p_conversation;
+  select created_by, type into v_creator, v_type
+  from public.conversations where id = p_conversation;
   if v_creator is null then raise exception 'conversation not found'; end if;
+  if v_type <> 'group' then raise exception 'not a group conversation'; end if;
 
   caller_creator := v_creator = me;
   caller_admin := caller_creator or exists (
@@ -286,14 +297,17 @@ as $$
 declare
   me uuid := auth.uid();
   v_creator uuid;
+  v_type text;
   caller_creator boolean;
   caller_admin boolean;
   target_exists boolean;
 begin
   if me is null then raise exception 'not authenticated'; end if;
 
-  select created_by into v_creator from public.conversations where id = p_conversation;
+  select created_by, type into v_creator, v_type
+  from public.conversations where id = p_conversation;
   if v_creator is null then raise exception 'conversation not found'; end if;
+  if v_type <> 'group' then raise exception 'not a group conversation'; end if;
 
   caller_creator := v_creator = me;
   caller_admin := caller_creator or exists (
@@ -339,6 +353,7 @@ begin
   caller_admin := exists (
     select 1 from public.conversations c
     where c.id = p_conversation
+      and c.type = 'group'
       and (
         c.created_by = me
         or exists (
