@@ -3,6 +3,7 @@ import { Avatar } from '../../shared/ui/avatar'
 import { UnreadBadge } from '../../shared/ui/badge'
 import { cn } from '../../shared/lib/utils'
 import { formatRelativeTime } from '../../shared/lib/date'
+import { useSignedUrl } from '../../messaging'
 import type { InboxConversation } from '../../shared/types/database'
 
 export interface ConversationItemProps {
@@ -21,7 +22,8 @@ export function ConversationItem({ conversation, active, compact, online }: Conv
   const unread = conversation.unread_count > 0
   const title = titleOf(conversation)
   const preview = conversation.last_message_preview ?? 'No messages yet'
-  const avatarSrc = conversation.image_url ?? conversation.other_user?.avatar_url ?? null
+  const signedImage = useSignedUrl(conversation.image_url)
+  const avatarSrc = signedImage ?? conversation.other_user?.avatar_url ?? null
 
   if (compact) {
     return (
