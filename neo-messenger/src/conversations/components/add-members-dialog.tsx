@@ -37,6 +37,7 @@ export function AddMembersDialog({
   const [loaded, setLoaded] = useState<{ key: string; results: Member[] } | null>(null)
 
   useEffect(() => {
+    if (!open) return
     let active = true
     searchUsers(debounced, user?.id ?? '')
       .then((users) => {
@@ -48,7 +49,7 @@ export function AddMembersDialog({
     return () => {
       active = false
     }
-  }, [debounced, key, user?.id])
+  }, [open, debounced, key, user?.id])
 
   const excluded = new Set(excludeIds)
   if (user) excluded.add(user.id)
