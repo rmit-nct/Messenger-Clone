@@ -121,7 +121,7 @@ export function ConversationInfoPanel({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-panel px-4">
         <h2 className="text-sm font-semibold text-foreground">Conversation info</h2>
         <Button variant="ghost" size="icon-sm" aria-label="Close info" onClick={onClose}>
           <X className="h-4 w-4" />
