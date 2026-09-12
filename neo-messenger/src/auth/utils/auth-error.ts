@@ -12,5 +12,6 @@ const MESSAGES: Record<string, string> = {
 
 export function showError(error: unknown): string {
   const raw = error instanceof Error ? error.message : String(error)
-  return MESSAGES[raw] ?? 'An error occurred; please try again.'
+  const key = raw.trim().replace(/\.$/, '')
+  return MESSAGES[key] ?? 'An error occurred; please try again.'
 }

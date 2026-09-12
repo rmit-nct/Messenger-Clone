@@ -16,8 +16,9 @@ export async function signOut() {
 }
 
 export async function resetPassword(email: string) {
-  // redirectTo: point at the reset-password page once routing exists
-  return supabase.auth.resetPasswordForEmail(email)
+  return supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
 }
 
 export async function updatePassword(newPassword: string) {
