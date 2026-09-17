@@ -109,3 +109,27 @@ export interface ConversationMediaItem {
   created_at: string
   sender_id: string
 }
+
+export interface StoryMedia {
+  id: string
+  imagePath: string
+  caption: string | null
+  createdAt: string
+  expireAt: string
+  seen: boolean
+}
+
+export interface ActiveStoryAuthor {
+  userId: string
+  name: string
+  avatarUrl: string | null
+  stories: StoryMedia[]
+  hasUnseen: boolean
+}
+
+export interface UserStories {
+  userId: string
+  name: string
+  avatarUrl: string | null
+  stories: StoryMedia[]
+}

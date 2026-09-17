@@ -58,8 +58,8 @@ export async function uploadMessageImage(
   return path
 }
 
-export async function createSignedUrl(path: string): Promise<string> {
-  const { data, error } = await supabase.storage.from('messages').createSignedUrl(path, 3600)
+export async function createSignedUrl(path: string, bucket = 'messages'): Promise<string> {
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 3600)
   if (error) throw new Error(error.message)
   return data.signedUrl
 }
@@ -98,4 +98,40 @@ export async function uploadAvatar(
   })
 
   return `${env.supabaseUrl}/storage/v1/object/public/avatars/${path}`
+}
+
+export async function uploadStoryImage(
+  userId: string,
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<string> {
+  const result = validateImage(file)
+  if (!result.ok) throw new Error(result.error ?? 'Invalid image')
+
+  const { data: sessionData } = await supabase.auth.getSession()
+  const token = sessionData.session?.access_token
+  if (!token) throw new Error('Not authenticated')
+
+  const path = `${userId}/story-${crypto.randomUUID()}.${extensionFor(file)}`
+  const url = `${env.supabaseUrl}/storage/v1/object/stories/${path}`
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.setRequestHeader('apikey', env.supabaseAnonKey)
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.setRequestHeader('Content-Type', file.type)
+    xhr.setRequestHeader('x-upsert', 'false')
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve()
+      else reject(new Error(`Upload failed (${xhr.status})`))
+    }
+    xhr.onerror = () => reject(new Error('Upload failed'))
+    xhr.send(file)
+  })
+
+  return path
 }

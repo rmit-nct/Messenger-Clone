@@ -7,3 +7,4 @@ export const TYPING_IDLE_MS = 3000
 export const TYPING_THROTTLE_MS = 1500
 export const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
 export const USERS_SEARCH_LIMIT = 20
+export const STORY_CAPTION_MAX = 120
