@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Trash2, X } from 'lucide-react'
 import { Avatar } from '../../shared/ui/avatar'
 import { Button } from '../../shared/ui/button'
@@ -40,6 +41,7 @@ export function StoryViewer({
   onDelete,
 }: StoryViewerProps) {
   const current = stories[index]
+  const touchStartX = useRef<number | null>(null)
 
   return (
     <div
@@ -47,6 +49,19 @@ export function StoryViewer({
       aria-modal="true"
       aria-label={`${authorName}'s story`}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      onTouchStart={(e) => {
+        touchStartX.current = e.touches[0]?.clientX ?? null
+      }}
+      onTouchEnd={(e) => {
+        const start = touchStartX.current
+        touchStartX.current = null
+        if (start === null) return
+        const end = e.changedTouches[0]?.clientX ?? start
+        const delta = end - start
+        if (Math.abs(delta) < 50) return
+        if (delta < 0) onNext()
+        else onPrev()
+      }}
     >
       <div className="relative flex h-full w-full flex-col overflow-hidden bg-black md:h-[80vh] md:max-w-sm md:rounded-xl">
         {imageUrl ? (
