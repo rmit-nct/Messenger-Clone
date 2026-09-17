@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/auth'
+import { Button } from '../../shared/ui/button'
 import { ConfirmDialog } from '../../shared/ui/confirm-dialog'
 import { ErrorState } from '../../shared/ui/error-state'
 import { activeStoriesKey, userStoriesKey } from '../../shared/lib/query-keys'
@@ -30,7 +31,7 @@ export function StoryViewerPage() {
 
   const playback = useStoryPlayback(stories, {
     onSeen: (story) => {
-      if (user) void recordStoryView(story.id, user.id)
+      if (user) void recordStoryView(story.id, user.id).catch(() => {})
     },
     onEnd: () => navigate('/inbox'),
   })
@@ -40,7 +41,7 @@ export function StoryViewerPage() {
   const viewersQuery = useQuery({
     queryKey: ['story-viewers', current?.id ?? ''],
     queryFn: () => fetchStoryViewers(current?.id ?? ''),
-    enabled: viewersOpen && !!current,
+    enabled: isOwner && !!current,
   })
 
   useEffect(() => {
@@ -75,8 +76,11 @@ export function StoryViewerPage() {
 
   if (storiesQuery.isError) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-black/90">
         <ErrorState title="Couldn't load story" onRetry={() => void storiesQuery.refetch()} />
+        <Button variant="outline" onClick={() => navigate('/inbox')}>
+          Close
+        </Button>
       </div>
     )
   }
