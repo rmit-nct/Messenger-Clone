@@ -27,7 +27,7 @@ export function ProfileForm({ initialProfile, submitLabel, onSaved }: ProfileFor
   const [saved, setSaved] = useState(false)
 
   const trimmed = name.trim()
-  const nameInvalid = trimmed.length > 0 && (trimmed.length < 2 || trimmed.length > 40)
+  const nameInvalid = trimmed.length < 2 || trimmed.length > 40
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
