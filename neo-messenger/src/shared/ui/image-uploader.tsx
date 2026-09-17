@@ -92,14 +92,14 @@ export function ImageUploader({
         <div
           {...dropHandlers}
           className={cn(
-            'relative flex min-h-64 items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted/30',
+            'relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted/30',
             dragOver && 'border-cyan bg-cyan/10',
             disabled && 'opacity-60',
           )}
         >
           {preview ? (
             <>
-              <img src={preview} alt="Story preview" className="h-full w-full object-cover" />
+              <img src={preview} alt="Story preview" className="absolute inset-0 h-full w-full object-cover" />
               {onRemove && (
                 <Button
                   type="button"
@@ -113,6 +113,16 @@ export function ImageUploader({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="absolute bottom-2 left-2"
+                disabled={disabled}
+                onClick={() => inputRef.current?.click()}
+              >
+                Replace
+              </Button>
             </>
           ) : (
             <button
