@@ -1,5 +1,5 @@
 // StoryTray — horizontal scroll of StoryAvatars; active ring (cyan→gold), viewed (muted), own "+"
-// Frame only; real active-story query at 3.3
+import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { StoryAvatar, type StoryRingState } from './story-avatar'
 
@@ -17,22 +17,27 @@ interface StoryTrayProps {
 export function StoryTray({ stories }: StoryTrayProps) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-      {/* own "+" via StoryAvatar with ownAvatar */}
       <div className="flex shrink-0 flex-col items-center gap-1">
-        <div className="relative">
-          <div className="rounded-full bg-gradient-to-tr from-cyan to-gold p-[2px]">
-            <button className="relative flex h-14 w-14 items-center justify-center rounded-full bg-muted/40" aria-label="Add story">
-              <Plus className="h-5 w-5 text-gold" />
-            </button>
-          </div>
-        </div>
+        <Link
+          to="/story/create"
+          aria-label="Add story"
+          className="rounded-full bg-gradient-to-tr from-cyan to-gold p-[2px]"
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/40">
+            <Plus className="h-5 w-5 text-gold" />
+          </span>
+        </Link>
         <span className="w-14 truncate text-center text-xs text-muted-foreground">Your story</span>
       </div>
       {stories.map((s) => (
-        <button key={s.userId} className="flex shrink-0 flex-col items-center gap-1">
+        <Link
+          key={s.userId}
+          to={`/stories/${s.userId}`}
+          className="flex shrink-0 flex-col items-center gap-1"
+        >
           <StoryAvatar name={s.name} src={s.imageUrl} ring={s.ring} />
           <span className="w-14 truncate text-center text-xs text-muted-foreground">{s.name}</span>
-        </button>
+        </Link>
       ))}
     </div>
   )

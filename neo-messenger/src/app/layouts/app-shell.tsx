@@ -53,8 +53,8 @@ export function AppShell({ sidebar, main }: AppShellProps) {
         }`}
       >
         {/* brand — collapsed: logo only, centered, fixed size (no squish) */}
-        <div className="shrink-0 overflow-hidden border-b border-border">
-          <div className="m-1.5 flex items-center justify-between rounded-lg bg-foreground/10 px-2 py-2">
+        <div className="flex h-16 shrink-0 items-center overflow-hidden border-b border-border px-1.5">
+          <div className="flex w-full items-center justify-between rounded-lg bg-foreground/10 px-2 py-2">
             {sidebarCollapsed ? (
               <img
                 src={logo}
@@ -79,7 +79,7 @@ export function AppShell({ sidebar, main }: AppShellProps) {
         {/* feature content — adapts to collapsed (icon rail) */}
         <div className="flex-1 overflow-y-auto">{sidebar(sidebarCollapsed, () => setSidebarCollapsed(false))}</div>
 
-        <div className="shrink-0 border-t border-border p-2">
+        <div className="flex h-16 shrink-0 items-center border-t border-border px-2">
           <UserMenu className="w-full" />
         </div>
 
@@ -96,7 +96,7 @@ export function AppShell({ sidebar, main }: AppShellProps) {
       </aside>
 
       {/* Main pane */}
-      <main className="flex-1 min-w-0 overflow-y-auto pt-16 md:pt-0">{main}</main>
+      <main className="flex-1 min-w-0 overflow-y-auto pt-16 pb-20 md:pt-0 md:pb-0">{main}</main>
 
       {/* Mobile bottom nav */}
       <BottomNavBar />

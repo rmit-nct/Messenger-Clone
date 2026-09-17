@@ -1,3 +1,13 @@
-// messaging public barrel (bubbles, reactions, typing, realtime)
-
-// TODO: implement
+export { useMessageRealtime } from './hooks/use-message-realtime'
+export { toggleReaction } from './api/reactions'
+export { useTyping } from './hooks/use-typing'
+export { usePresence } from './hooks/presence-context'
+export { PresenceProvider } from './hooks/presence-provider'
+export { useSignedUrl } from './hooks/use-signed-url'
+export { MessageBubble } from './components/message-bubble'
+export { MessageComposer } from './components/message-composer'
+export { DateSeparator } from './components/date-separator'
+export { UnreadDivider } from './components/unread-divider'
+export { TypingIndicator } from './components/typing-indicator'
+export { ReactionRow } from './components/reaction-row'
+export { ReactionPicker } from './components/reaction-picker'

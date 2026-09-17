@@ -1,3 +1,5 @@
-// profile public barrel
-
-// TODO: implement
+export { SetupProfilePage } from './pages/setup-profile-page'
+export { ProfilePage } from './pages/profile-page'
+export { SettingsPage } from './pages/settings-page'
+export { ProfileForm } from './components/profile-form'
+export { useMyProfile, useProfile, useUpdateProfile } from './hooks/use-profile'

@@ -1,3 +1,2 @@
-// conversations public barrel
-
-// TODO: implement
+export { ConversationPage } from './pages/conversation-page'
+export { useConversation } from './hooks/use-conversation'
