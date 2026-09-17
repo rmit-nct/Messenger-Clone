@@ -10,9 +10,7 @@ import { Button } from '../../shared/ui/button'
 import { cn } from '../../shared/lib/utils'
 import { useTheme } from '../contexts/theme'
 import { useAuth } from '../../auth'
-
-// TODO 1.1: real session from auth context; 1.4: real avatar/name
-const ME = { name: 'Guest', avatarUrl: null }
+import { useMyProfile } from '../../profile'
 
 // approximate menu size for placement checks
 const MENU_HEIGHT = 272
@@ -29,7 +27,9 @@ export function UserMenu({ className }: UserMenuProps) {
   const [buttonEl, setButtonEl] = useState<HTMLButtonElement | null>(null)
   const [signingOut, setSigningOut] = useState(false)
   const { resolved, setTheme } = useTheme()
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
+  const { profile } = useMyProfile()
+  const displayName = profile?.display_name ?? user?.email?.split('@')[0] ?? 'Me'
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -67,7 +67,7 @@ export function UserMenu({ className }: UserMenuProps) {
           aria-expanded={open}
           onClick={() => buttonEl && toggle(buttonEl)}
         >
-          <Avatar name={ME.name} src={ME.avatarUrl} size="sm" />
+          <Avatar name={displayName} src={profile?.avatar_url ?? null} size="sm" />
         </Button>
         {open && (
           <>
@@ -80,8 +80,8 @@ export function UserMenu({ className }: UserMenuProps) {
               )}
             >
               <div className="px-3 py-2">
-                <p className="text-sm font-semibold text-foreground">{ME.name}</p>
-                <p className="text-xs text-muted-foreground">guest (auth not wired)</p>
+                <p className="text-sm font-semibold text-foreground">{displayName}</p>
+                <p className="truncate text-xs text-muted-foreground">{user?.email ?? ''}</p>
               </div>
               <Link
                 to="/profile"

@@ -11,6 +11,7 @@ import {
 } from '../../auth'
 import { InboxPage } from '../../inbox'
 import { ConversationPage } from '../../conversations'
+import { ProfilePage, SettingsPage, SetupProfilePage } from '../../profile'
 
 export function AppRouter() {
   return (
@@ -32,12 +33,24 @@ export function AppRouter() {
         <Route
           element={
             <RequireAuth>
+              <Outlet />
+            </RequireAuth>
+          }
+        >
+          <Route path="/setup-profile" element={<SetupProfilePage />} />
+        </Route>
+
+        <Route
+          element={
+            <RequireAuth>
               <ShellLayout />
             </RequireAuth>
           }
         >
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/conversation/:id" element={<ConversationPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="/landing-page" element={<Navigate to="/" replace />} />
