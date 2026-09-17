@@ -63,7 +63,7 @@ export function useMessageRealtime({ conversationId, currentUserId, members }: O
     const invalidateInbox = () => queryClient.invalidateQueries({ queryKey: inboxKey })
 
     const channel = supabase
-      .channel(`conversation:${conversationId}`)
+      .channel(`conversation:${conversationId}:${crypto.randomUUID()}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },

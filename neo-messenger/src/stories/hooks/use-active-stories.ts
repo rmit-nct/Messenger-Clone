@@ -18,7 +18,7 @@ export function useActiveStories() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('stories:changes')
+      .channel(`stories:changes:${crypto.randomUUID()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
         void queryClient.invalidateQueries({ queryKey: activeStoriesKey })
       })

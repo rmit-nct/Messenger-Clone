@@ -17,6 +17,9 @@ alter table public.stories add column if not exists image_path text;
 alter table public.stories add column if not exists caption text;
 alter table public.stories add column if not exists created_at timestamptz not null default now();
 alter table public.stories add column if not exists expire_at timestamptz not null default (now() + interval '24 hours');
+alter table public.stories alter column id set default gen_random_uuid();
+alter table public.stories alter column created_at set default now();
+alter table public.stories alter column expire_at set default (now() + interval '24 hours');
 
 create index if not exists stories_expire_user_idx on public.stories (expire_at, user_id);
 
@@ -30,6 +33,17 @@ create table if not exists public.story_views (
 alter table public.story_views add column if not exists story_id uuid;
 alter table public.story_views add column if not exists viewer_id uuid;
 alter table public.story_views add column if not exists viewed_at timestamptz not null default now();
+alter table public.story_views alter column viewed_at set default now();
+
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'story_views' and column_name = 'id'
+  ) then
+    alter table public.story_views alter column id set default gen_random_uuid();
+  end if;
+end $$;
 
 -- ensure the upsert target exists even if an older table had a different key
 delete from public.story_views a

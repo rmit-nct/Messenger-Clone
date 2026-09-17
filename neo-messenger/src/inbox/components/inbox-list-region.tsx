@@ -69,8 +69,6 @@ export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegion
         <>
           {isStoriesLoading ? (
             <StoryTraySkeleton />
-          ) : trayStories.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Stories appear here</p>
           ) : (
             <StoryTray stories={trayStories} />
           )}
