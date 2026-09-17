@@ -31,7 +31,10 @@ export function StoryViewerPage() {
 
   const playback = useStoryPlayback(stories, {
     onSeen: (story) => {
-      if (user) void recordStoryView(story.id, user.id).catch(() => {})
+      if (!user) return
+      void recordStoryView(story.id, user.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: activeStoriesKey }))
+        .catch(() => {})
     },
     onEnd: () => navigate('/inbox'),
   })
@@ -48,15 +51,17 @@ export function StoryViewerPage() {
     if (storiesQuery.isSuccess && stories.length === 0) navigate('/inbox', { replace: true })
   }, [storiesQuery.isSuccess, stories.length, navigate])
 
+  const { next, prev } = playback
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') navigate('/inbox')
-      if (event.key === 'ArrowLeft') playback.prev()
-      if (event.key === 'ArrowRight') playback.next()
+      if (event.key === 'ArrowLeft') prev()
+      if (event.key === 'ArrowRight') next()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [navigate, playback])
+  }, [navigate, next, prev])
 
   async function handleDelete() {
     if (!current) return

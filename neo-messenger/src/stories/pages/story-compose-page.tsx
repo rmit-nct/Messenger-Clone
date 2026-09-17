@@ -44,8 +44,8 @@ export function StoryComposePage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-panel shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-0 md:p-4">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-none border-border bg-panel shadow-xl md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-xl md:border">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h1 className="text-sm font-semibold text-foreground">Create Story</h1>
           <Button variant="ghost" size="icon-sm" aria-label="Close" onClick={() => navigate('/inbox')}>
