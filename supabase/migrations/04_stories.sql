@@ -9,6 +9,15 @@ create table if not exists public.stories (
   created_at timestamptz not null default now(),
   expire_at timestamptz not null default (now() + interval '24 hours')
 );
+
+-- reconcile schema drift from an older definition (create table if not exists
+-- does not add columns to an existing table)
+alter table public.stories add column if not exists user_id uuid;
+alter table public.stories add column if not exists image_path text;
+alter table public.stories add column if not exists caption text;
+alter table public.stories add column if not exists created_at timestamptz not null default now();
+alter table public.stories add column if not exists expire_at timestamptz not null default (now() + interval '24 hours');
+
 create index if not exists stories_expire_user_idx on public.stories (expire_at, user_id);
 
 create table if not exists public.story_views (
@@ -17,6 +26,19 @@ create table if not exists public.story_views (
   viewed_at timestamptz not null default now(),
   primary key (story_id, viewer_id)
 );
+
+alter table public.story_views add column if not exists story_id uuid;
+alter table public.story_views add column if not exists viewer_id uuid;
+alter table public.story_views add column if not exists viewed_at timestamptz not null default now();
+
+-- ensure the upsert target exists even if an older table had a different key
+delete from public.story_views a
+using public.story_views b
+where a.ctid < b.ctid and a.story_id = b.story_id and a.viewer_id = b.viewer_id;
+
+create unique index if not exists story_views_story_viewer_key
+  on public.story_views (story_id, viewer_id);
+
 
 alter table public.stories enable row level security;
 alter table public.story_views enable row level security;
