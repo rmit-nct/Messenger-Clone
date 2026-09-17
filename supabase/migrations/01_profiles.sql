@@ -52,9 +52,15 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- public avatars bucket; each user writes only under their own {userId}/ folder
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 5242880, array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
+
+update storage.buckets
+  set public = true,
+      file_size_limit = 5242880,
+      allowed_mime_types = array['image/jpeg','image/png','image/webp']
+  where id = 'avatars';
 
 drop policy if exists "avatars owner upload" on storage.objects;
 create policy "avatars owner upload"

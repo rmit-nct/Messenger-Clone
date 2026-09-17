@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ImagePlus, Trash2 } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '../lib/utils'
@@ -21,9 +21,17 @@ export function ImageUploader({
   className,
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const objectUrlRef = useRef<string | null>(null)
   const [preview, setPreview] = useState<string | null>(initialUrl)
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(
+    () => () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
+    },
+    [],
+  )
 
   function choose(file: File | null) {
     if (!file || disabled) return
@@ -32,21 +40,24 @@ export function ImageUploader({
       setError(result.error ?? 'Invalid image')
       return
     }
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
+    const url = URL.createObjectURL(file)
+    objectUrlRef.current = url
     setError(null)
-    setPreview((current) => {
-      if (current?.startsWith('blob:')) URL.revokeObjectURL(current)
-      return URL.createObjectURL(file)
-    })
+    setPreview(url)
+    if (inputRef.current) inputRef.current.value = ''
     onSelect(file)
   }
 
   function remove() {
     if (disabled) return
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current)
+      objectUrlRef.current = null
+    }
     setError(null)
-    setPreview((current) => {
-      if (current?.startsWith('blob:')) URL.revokeObjectURL(current)
-      return initialUrl
-    })
+    setPreview(initialUrl)
+    if (inputRef.current) inputRef.current.value = ''
     onRemove?.()
   }
 

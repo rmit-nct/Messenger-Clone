@@ -1,4 +1,4 @@
-// UserMenu — avatar dropdown: Profile / Settings / Sign out (login stub; auth in 1.1)
+// UserMenu — avatar dropdown: Profile / Settings / Sign out
 // Avatar left, theme toggle right. Dropdown anchors to the avatar (inner relative),
 // opening downward unless bottom-of-viewport forces upward; rightSide flips outward in top-nav.
 import { useState } from 'react'
@@ -29,7 +29,7 @@ export function UserMenu({ className }: UserMenuProps) {
   const { resolved, setTheme } = useTheme()
   const { signOut, user } = useAuth()
   const { profile } = useMyProfile()
-  const displayName = profile?.display_name ?? user?.email?.split('@')[0] ?? 'Me'
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Me'
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
