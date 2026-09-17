@@ -17,6 +17,13 @@ export function useStoryPlayback(stories: StoryMedia[], options: PlaybackOptions
   const elapsedRef = useRef(0)
   const activeIdRef = useRef<string | null>(null)
   const seenRef = useRef<Set<string>>(new Set())
+  const onSeenRef = useRef(onSeen)
+  const onEndRef = useRef(onEnd)
+
+  useEffect(() => {
+    onSeenRef.current = onSeen
+    onEndRef.current = onEnd
+  }, [onSeen, onEnd])
 
   const current = stories[index]
 
@@ -25,11 +32,11 @@ export function useStoryPlayback(stories: StoryMedia[], options: PlaybackOptions
     const timer = setTimeout(() => {
       if (!seenRef.current.has(current.id)) {
         seenRef.current.add(current.id)
-        onSeen?.(current)
+        onSeenRef.current?.(current)
       }
     }, SEEN_AFTER_MS)
     return () => clearTimeout(timer)
-  }, [current, onSeen])
+  }, [current])
 
   useEffect(() => {
     if (!current || paused) return
@@ -47,14 +54,14 @@ export function useStoryPlayback(stories: StoryMedia[], options: PlaybackOptions
       setProgress(pct)
       if (pct >= 100) {
         if (index < stories.length - 1) setIndex((i) => i + 1)
-        else onEnd?.()
+        else onEndRef.current?.()
         return
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [current, paused, index, stories.length, onEnd])
+  }, [current, paused, index, stories.length])
 
   const next = useCallback(() => {
     setIndex((i) => (i < stories.length - 1 ? i + 1 : i))
