@@ -6,7 +6,7 @@ import { SearchBar } from './search-bar'
 import { SearchResults } from './search-results'
 import { ConversationList } from './conversation-list'
 import { NewConversationDialog } from './new-conversation-dialog'
-import { StoryTray, StoryTraySkeleton } from '../../stories'
+import { StoryTray, StoryTraySkeleton, useActiveStories } from '../../stories'
 import type { TrayStory } from '../../stories'
 
 interface InboxListRegionProps {
@@ -15,9 +15,14 @@ interface InboxListRegionProps {
 }
 
 export function InboxListRegion({ collapsed = false, onExpand }: InboxListRegionProps) {
-  const trayStories: TrayStory[] = []
+  const { authors, isLoading: isStoriesLoading } = useActiveStories()
+  const trayStories: TrayStory[] = authors.map((author) => ({
+    userId: author.userId,
+    name: author.name,
+    imageUrl: author.avatarUrl,
+    ring: author.hasUnseen ? 'active' : 'viewed',
+  }))
   const isListLoading = false
-  const isStoriesLoading = false
   const [focusSearch, setFocusSearch] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [query, setQuery] = useState('')

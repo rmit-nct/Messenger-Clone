@@ -12,6 +12,7 @@ import {
 import { InboxPage } from '../../inbox'
 import { ConversationPage } from '../../conversations'
 import { ProfilePage, SettingsPage, SetupProfilePage } from '../../profile'
+import { StoryComposePage, StoryViewerPage } from '../../stories'
 
 export function AppRouter() {
   return (
@@ -38,6 +39,8 @@ export function AppRouter() {
           }
         >
           <Route path="/setup-profile" element={<SetupProfilePage />} />
+          <Route path="/story/create" element={<StoryComposePage />} />
+          <Route path="/stories/:userId" element={<StoryViewerPage />} />
         </Route>
 
         <Route
