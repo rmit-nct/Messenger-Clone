@@ -25,12 +25,14 @@ export function ProfileForm({ initialProfile, submitLabel, onSaved }: ProfileFor
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [touched, setTouched] = useState(false)
 
   const trimmed = name.trim()
   const nameInvalid = trimmed.length < 2 || trimmed.length > 40
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setTouched(true)
     setSaved(false)
     if (trimmed.length < 2 || trimmed.length > 40) {
       setError('Display name must be 2–40 characters.')
@@ -65,14 +67,17 @@ export function ProfileForm({ initialProfile, submitLabel, onSaved }: ProfileFor
       <FormField
         id="profile-name"
         label="Display name"
-        error={nameInvalid ? 'Must be 2–40 characters' : undefined}
+        error={touched && nameInvalid ? 'Must be 2–40 characters' : undefined}
       >
         <Input
           id="profile-name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value)
+            setTouched(true)
+          }}
           autoComplete="name"
-          aria-invalid={nameInvalid}
+          aria-invalid={touched && nameInvalid}
         />
       </FormField>
 
