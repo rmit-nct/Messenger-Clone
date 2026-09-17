@@ -12,11 +12,13 @@ create table if not exists public.profiles (
 -- allow any public user to read profiles (needed for avatars / member lists; DM/group reads are gated by conversation RLS)
 alter table public.profiles enable row level security;
 
+drop policy if exists "profiles are readable by authenticated users" on public.profiles;
 create policy "profiles are readable by authenticated users"
   on public.profiles for select
   to authenticated
   using (true);
 
+drop policy if exists "users can update own profile" on public.profiles;
 create policy "users can update own profile"
   on public.profiles for update
   to authenticated
