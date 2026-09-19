@@ -77,7 +77,7 @@ export function RecoverForm() {
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />}
-        {isSubmitting ? 'Sending...' : 'A link has been sent to your email'}
+        {isSubmitting ? 'Sending...' : 'Send verification email'}
       </Button>
 
       <Button render={<Link to="/login" />} variant="ghost" className="w-full">
