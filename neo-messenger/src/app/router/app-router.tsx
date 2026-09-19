@@ -12,7 +12,7 @@ import {
 import { InboxPage } from '../../inbox'
 import { ConversationPage } from '../../conversations'
 import { ProfilePage, SettingsPage, SetupProfilePage } from '../../profile'
-import { StoryComposePage, StoryViewerPage } from '../../stories'
+import { StoryComposePage, StoriesPage, StoryViewerPage } from '../../stories'
 
 export function AppRouter() {
   return (
@@ -52,6 +52,7 @@ export function AppRouter() {
         >
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/conversation/:id" element={<ConversationPage />} />
+          <Route path="/stories" element={<StoriesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

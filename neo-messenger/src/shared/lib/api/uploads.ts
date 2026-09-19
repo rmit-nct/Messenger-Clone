@@ -1,6 +1,7 @@
 import { supabase } from '../supabase/client'
 import { env } from '../env'
 import { IMAGE_MAX_BYTES, IMAGE_MIME } from '../../constants/limits'
+import { randomId } from '../uuid'
 
 interface ValidationResult {
   ok: boolean
@@ -34,7 +35,7 @@ export async function uploadMessageImage(
   const token = sessionData.session?.access_token
   if (!token) throw new Error('Not authenticated')
 
-  const path = `${conversationId}/${crypto.randomUUID()}.${extensionFor(file)}`
+  const path = `${conversationId}/${randomId()}.${extensionFor(file)}`
   const url = `${env.supabaseUrl}/storage/v1/object/messages/${path}`
 
   await new Promise<void>((resolve, reject) => {
@@ -112,7 +113,7 @@ export async function uploadStoryImage(
   const token = sessionData.session?.access_token
   if (!token) throw new Error('Not authenticated')
 
-  const path = `${userId}/story-${crypto.randomUUID()}.${extensionFor(file)}`
+  const path = `${userId}/story-${randomId()}.${extensionFor(file)}`
   const url = `${env.supabaseUrl}/storage/v1/object/stories/${path}`
 
   await new Promise<void>((resolve, reject) => {
