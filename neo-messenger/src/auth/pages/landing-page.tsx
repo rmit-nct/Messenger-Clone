@@ -1,7 +1,8 @@
 // product intro + auth entry (guest only)
 import { Link } from 'react-router-dom'
-import { Bell, MessageCircle, MoreHorizontal, PlayCircle, Search, Send, Video } from 'lucide-react'
+import { Bell, MoreHorizontal, PlayCircle, Search, Send, Video } from 'lucide-react'
 import { Avatar } from '@/shared/ui/avatar'
+import logo from '@/assets/logo.png'
 
 const proofNames = ['Sarah Jenkins', 'Alex Mercer', 'Jordan Lee']
 
@@ -14,7 +15,7 @@ export function LandingPage() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-panel/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <MessageCircle className="h-7 w-7 text-cyan-strong dark:text-cyan" />
+            <img src={logo} alt="" aria-hidden="true" className="h-7 w-auto object-contain" />
             <span className="text-xl font-extrabold tracking-tighter">NEO</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
