@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../shared/lib/supabase/client'
 import { inboxKey } from '../../shared/lib/query-keys'
+import { randomId } from '../../shared/lib/uuid'
 
 export function useInboxRealtime() {
   const queryClient = useQueryClient()
@@ -14,7 +15,7 @@ export function useInboxRealtime() {
     }
 
     const channel = supabase
-      .channel(`inbox:changes:${crypto.randomUUID()}`)
+      .channel(`inbox:changes:${randomId()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, invalidate)
       .on(
         'postgres_changes',

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/auth'
 import { conversationKey, inboxKey, messagesKey } from '../../shared/lib/query-keys'
+import { randomId } from '../../shared/lib/uuid'
 import { MESSAGES_PAGE_SIZE } from '../../shared/constants/limits'
 import type { Member, MessageWithMeta } from '../../shared/types/database'
 import {
@@ -80,7 +81,7 @@ export function useConversation(conversationId: string) {
   }
 
   const sendText = async (content: string) => {
-    const tempId = `temp-${crypto.randomUUID()}`
+    const tempId = `temp-${randomId()}`
     const optimistic: MessageWithMeta = {
       id: tempId,
       conversation_id: conversationId,
@@ -108,7 +109,7 @@ export function useConversation(conversationId: string) {
   }
 
   const sendImage = async (file: File, onProgress?: (percent: number) => void) => {
-    const tempId = `temp-${crypto.randomUUID()}`
+    const tempId = `temp-${randomId()}`
     const optimistic: MessageWithMeta = {
       id: tempId,
       conversation_id: conversationId,

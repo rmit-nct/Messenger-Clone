@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/auth'
 import { supabase } from '../../shared/lib/supabase/client'
 import { activeStoriesKey } from '../../shared/lib/query-keys'
+import { randomId } from '../../shared/lib/uuid'
 import { fetchActiveStories } from '../api/stories'
 
 export function useActiveStories() {
@@ -18,7 +19,7 @@ export function useActiveStories() {
 
   useEffect(() => {
     const channel = supabase
-      .channel(`stories:changes:${crypto.randomUUID()}`)
+      .channel(`stories:changes:${randomId()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
         void queryClient.invalidateQueries({ queryKey: activeStoriesKey })
       })

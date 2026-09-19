@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { supabase } from '../../shared/lib/supabase/client'
 import { inboxKey, messagesKey } from '../../shared/lib/query-keys'
+import { randomId } from '../../shared/lib/uuid'
 import type { Member, MessageWithMeta } from '../../shared/types/database'
 
 interface Options {
@@ -63,7 +64,7 @@ export function useMessageRealtime({ conversationId, currentUserId, members }: O
     const invalidateInbox = () => queryClient.invalidateQueries({ queryKey: inboxKey })
 
     const channel = supabase
-      .channel(`conversation:${conversationId}:${crypto.randomUUID()}`)
+      .channel(`conversation:${conversationId}:${randomId()}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
